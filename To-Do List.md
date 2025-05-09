@@ -11,13 +11,13 @@
 
 ### 0.1. Configuración del Entorno y Proyecto
 - [ ] **T0.1.1:** Configurar el entorno de desarrollo (IDE, .NET SDK, Git).
-- [ ] **T0.1.2:** Crear la estructura de la solución y los proyectos:
-    - [ ] `AppMultiTenant.Domain` (Biblioteca de Clases)
-    - [ ] `AppMultiTenant.Application` (Biblioteca de Clases)
-    - [ ] `AppMultiTenant.Infrastructure` (Biblioteca de Clases)
-    - [ ] `AppMultiTenant.Server` (ASP.NET Core Web API)
-    - [ ] `AppMultiTenant.Client` (Blazor WebAssembly)
-- [ ] **T0.1.3:** Inicializar y configurar el repositorio Git (ej. con GitFlow o similar).
+- [x] **T0.1.2:** Crear la estructura de la solución y los proyectos:
+    - [x] `AppMultiTenant.Domain` (Biblioteca de Clases)
+    - [x] `AppMultiTenant.Application` (Biblioteca de Clases)
+    - [x] `AppMultiTenant.Infrastructure` (Biblioteca de Clases)
+    - [x] `AppMultiTenant.Server` (ASP.NET Core Web API)
+    - [x] `AppMultiTenant.Client` (Blazor WebAssembly)
+- [x] **T0.1.3:** Inicializar y configurar el repositorio Git (ej. con GitFlow o similar).
 - [ ] **T0.1.4:** Configurar la Inyección de Dependencias (DI) básica en `Program.cs` del proyecto `Server`.
 - [ ] **T0.1.5:** Configurar la DI básica en `Program.cs` del proyecto `Client`.
 - [ ] **T0.1.6:** Implementar configuración básica de logging (ej. Serilog/NLog) en el proyecto `Server`.
