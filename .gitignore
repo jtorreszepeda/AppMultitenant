@@ -3,6 +3,11 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/main/VisualStudio.gitignore
 
+# Archivos de planificación y documentación del proyecto
+Plan.md
+PRD.md
+To-Do List.md
+
 # User-specific files
 *.rsuser
 *.suo
