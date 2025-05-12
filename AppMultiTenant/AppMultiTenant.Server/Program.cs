@@ -1,6 +1,13 @@
 using Serilog;
+using AppMultiTenant.Server.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Add User Secrets in Development environment
+if (builder.Environment.IsDevelopment())
+{
+    builder.Configuration.AddUserSecrets<Program>();
+}
 
 // Configure Serilog
 builder.Host.UseSerilog((context, configuration) => 
@@ -18,6 +25,9 @@ ConfigureMiddleware(app, app.Environment);
 
 // Ensure we log application startup
 Log.Information("Application starting up");
+// Log some configuration values (without sensitive data)
+Log.Information("Application Configuration: TenantResolutionStrategy = {TenantResolutionStrategy}", 
+    builder.Configuration["TenantConfiguration:TenantResolutionStrategy"]);
 
 try
 {
@@ -51,6 +61,12 @@ void ConfigureServices(IServiceCollection services, IConfiguration configuration
                   .AllowAnyHeader();
         });
     });
+    
+    // Configuration Options pattern registration
+    services.Configure<TenantConfiguration>(
+        configuration.GetSection("TenantConfiguration"));
+    services.Configure<JwtSettings>(
+        configuration.GetSection("JwtSettings"));
     
     // Domain and Application layer services will be registered here in future tasks
     
