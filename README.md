@@ -75,4 +75,50 @@ El proyecto sigue una arquitectura limpia (Clean Architecture) con las siguiente
 3. **Infraestructura**: Implementa los detalles técnicos (base de datos, autenticación, etc.)
 4. **Presentación**: Divide en dos partes - API Backend y Frontend Blazor
 
-En el frontend se implementa el patrón MVVM (Model-View-ViewModel). 
+En el frontend se implementa el patrón MVVM (Model-View-ViewModel).
+
+## Implementación Multi-Inquilino
+
+### Estrategia de Base de Datos
+
+La aplicación implementa una estrategia de base de datos compartida con esquema compartido, utilizando un discriminador `TenantId` para aislar los datos de cada inquilino. Esta estrategia ofrece:
+
+- **Eficiencia en recursos**: Una sola base de datos para todos los inquilinos
+- **Simplicidad de mantenimiento**: Un solo esquema de datos para mantener y actualizar
+- **Aislamiento lógico**: Cada inquilino solo puede acceder a sus propios datos
+
+### Componentes Clave para Multi-Inquilino
+
+#### 1. Interfaz ITenantEntity
+
+Todas las entidades que pertenecen a un inquilino específico implementan esta interfaz, que define:
+
+```csharp
+public interface ITenantEntity
+{
+    Guid TenantId { get; set; }
+}
+```
+
+#### 2. AppDbContext Multi-Inquilino
+
+El `AppDbContext` se ha configurado para soportar multi-inquilino mediante:
+
+- **Constructor con ITenantResolverService**: Obtiene automáticamente el inquilino actual del contexto de la solicitud
+- **Global Query Filters**: Filtran automáticamente las consultas por `TenantId`
+- **SaveChanges mejorado**: Asigna automáticamente el `TenantId` actual a las entidades nuevas
+- **Validación de asignación**: Evita guardar entidades con `TenantId` incorrecto
+
+#### 3. ITenantResolverService
+
+Interfaz responsable de determinar el inquilino actual en el contexto de una solicitud:
+
+```csharp
+public interface ITenantResolverService
+{
+    Guid? GetCurrentTenantId();
+    string? GetCurrentTenantIdentifier();
+}
+```
+
+Esta arquitectura garantiza que los datos permanezcan estrictamente separados entre inquilinos, aun compartiendo las mismas tablas en la base de datos. 

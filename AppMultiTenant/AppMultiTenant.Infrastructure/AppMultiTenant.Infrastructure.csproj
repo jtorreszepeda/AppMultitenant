@@ -6,4 +6,14 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.4" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AppMultiTenant.Domain\AppMultiTenant.Domain.csproj" />
+    <ProjectReference Include="..\AppMultiTenant.Application\AppMultiTenant.Application.csproj" />
+  </ItemGroup>
+
 </Project>
