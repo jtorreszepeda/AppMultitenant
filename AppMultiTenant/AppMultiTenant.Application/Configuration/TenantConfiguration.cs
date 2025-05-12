@@ -1,4 +1,4 @@
-namespace AppMultiTenant.Server.Configuration;
+namespace AppMultiTenant.Application.Configuration;
 
 /// <summary>
 /// Configuración relacionada con la estrategia multi-inquilino

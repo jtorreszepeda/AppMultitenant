@@ -1,4 +1,4 @@
-namespace AppMultiTenant.Server.Configuration;
+namespace AppMultiTenant.Application.Configuration;
 
 /// <summary>
 /// Configuración para la autenticación basada en JWT

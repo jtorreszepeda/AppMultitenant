@@ -21,4 +21,8 @@
     <Folder Include="Controllers\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\AppMultiTenant.Infrastructure\AppMultiTenant.Infrastructure.csproj" />
+  </ItemGroup>
+
 </Project>

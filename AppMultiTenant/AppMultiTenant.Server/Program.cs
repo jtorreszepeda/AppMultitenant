@@ -1,5 +1,8 @@
 using Serilog;
-using AppMultiTenant.Server.Configuration;
+using AppMultiTenant.Application.Configuration;
+using AppMultiTenant.Application.Interfaces.Services;
+using AppMultiTenant.Infrastructure.Identity;
+using Microsoft.AspNetCore.Http;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -70,7 +73,12 @@ void ConfigureServices(IServiceCollection services, IConfiguration configuration
     
     // Domain and Application layer services will be registered here in future tasks
     
-    // Infrastructure layer services will be registered here in future tasks
+    // Infrastructure layer services
+    // HttpContextAccessor - necesario para el TenantResolverService
+    services.AddHttpContextAccessor();
+    
+    // TenantResolverService - implementación básica para resolución de inquilinos
+    services.AddScoped<ITenantResolverService, TenantResolverService>();
     
     // Authentication services will be registered here in future tasks
 }
