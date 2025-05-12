@@ -1,4 +1,10 @@
+using Serilog;
+
 var builder = WebApplication.CreateBuilder(args);
+
+// Configure Serilog
+builder.Host.UseSerilog((context, configuration) => 
+    configuration.ReadFrom.Configuration(context.Configuration));
 
 // Add services to the container.
 
@@ -10,7 +16,21 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 ConfigureMiddleware(app, app.Environment);
 
-app.Run();
+// Ensure we log application startup
+Log.Information("Application starting up");
+
+try
+{
+    app.Run();
+}
+catch (Exception ex)
+{
+    Log.Fatal(ex, "Application start-up failed");
+}
+finally
+{
+    Log.CloseAndFlush();
+}
 
 // Method to configure all services
 void ConfigureServices(IServiceCollection services, IConfiguration configuration)
@@ -48,6 +68,9 @@ void ConfigureMiddleware(WebApplication app, IWebHostEnvironment env)
         app.UseDeveloperExceptionPage();
         app.MapOpenApi();
     }
+    
+    // Request logging middleware
+    app.UseSerilogRequestLogging();
     
     // Global error handling middleware will be added here in future tasks
     
