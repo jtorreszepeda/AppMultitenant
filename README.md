@@ -43,13 +43,24 @@ dotnet restore
 
 3. Configurar la cadena de conexión a la base de datos en `AppMultiTenant.Server/appsettings.json`
 
-4. Aplicar migraciones de Entity Framework Core
+4. Configurar las opciones de multi-inquilino en `appsettings.json`:
+```json
+{
+  "TenantConfiguration": {
+    "TenantResolutionStrategy": "Header", 
+    "DefaultTenantId": "", 
+    "DevModeEnabled": true
+  }
+}
+```
+
+5. Aplicar migraciones de Entity Framework Core
 ```
 cd AppMultiTenant.Server
 dotnet ef database update
 ```
 
-5. Ejecutar el proyecto
+6. Ejecutar el proyecto
 ```
 dotnet run --project AppMultiTenant.Server
 ```
@@ -76,6 +87,20 @@ El proyecto sigue una arquitectura limpia (Clean Architecture) con las siguiente
 4. **Presentación**: Divide en dos partes - API Backend y Frontend Blazor
 
 En el frontend se implementa el patrón MVVM (Model-View-ViewModel).
+
+### Dependencias entre capas
+
+Las dependencias entre capas siguen estrictamente la regla de dependencia de Clean Architecture:
+
+```
+Client/Server → Infrastructure → Application → Domain
+```
+
+Esto significa que:
+- Domain no depende de ninguna otra capa
+- Application solo depende de Domain
+- Infrastructure depende de Application (y por herencia de Domain)
+- Server/Client dependen de Infrastructure (y por herencia de Application y Domain)
 
 ## Implementación Multi-Inquilino
 
@@ -121,4 +146,56 @@ public interface ITenantResolverService
 }
 ```
 
-Esta arquitectura garantiza que los datos permanezcan estrictamente separados entre inquilinos, aun compartiendo las mismas tablas en la base de datos. 
+#### 4. TenantResolverService
+
+Implementación de `ITenantResolverService` que:
+
+- Recupera el inquilino actual del contexto HTTP (actualmente mediante cabeceras HTTP)
+- Almacena el contexto del inquilino durante toda la solicitud usando `AsyncLocal<T>`
+- Permite establecer manualmente el inquilino actual para pruebas
+- Soporta diferentes estrategias de resolución configurables:
+  - Cabecera HTTP (implementación inicial)
+  - Subdominio (futura implementación)
+  - Segmento de ruta (futura implementación)
+  - Claim JWT (futura implementación)
+
+Ejemplo de uso con cabeceras HTTP:
+```
+GET /api/data HTTP/1.1
+Host: example.com
+X-TenantId: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+X-TenantIdentifier: inquilino-1
+```
+
+#### 5. Configuración de la infraestructura multi-inquilino
+
+Para habilitar la resolución de inquilinos, se deben registrar los siguientes servicios:
+
+```csharp
+// En Program.cs
+services.AddHttpContextAccessor();
+services.AddScoped<ITenantResolverService, TenantResolverService>();
+```
+
+### Consideraciones de dependencias
+
+Durante el desarrollo, se identificaron requisitos de paquetes necesarios para que la infraestructura multi-inquilino funcione correctamente:
+
+```xml
+<!-- Para AppMultiTenant.Infrastructure -->
+<ItemGroup>
+  <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
+  <PackageReference Include="Microsoft.Extensions.Options" Version="9.0.4" />
+</ItemGroup>
+```
+
+Para evitar dependencias circulares, la clase `TenantConfiguration` debe colocarse en la capa de Application en lugar de Server, permitiendo que tanto Infrastructure como Server accedan a ella sin crear referencias circulares.
+
+Esta arquitectura garantiza que los datos permanezcan estrictamente separados entre inquilinos, aun compartiendo las mismas tablas en la base de datos.
+
+## Registro de cambios
+
+### 2025-05-09
+- Implementación de la interfaz `ITenantResolverService` y su implementación básica `TenantResolverService` en `AppMultiTenant.Infrastructure/Identity`
+- Registro del servicio `TenantResolverService` en la inyección de dependencias
+- Identificación y documentación de dependencias necesarias para la implementación multi-inquilino 
