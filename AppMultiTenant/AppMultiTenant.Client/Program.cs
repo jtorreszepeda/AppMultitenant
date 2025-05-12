@@ -5,6 +5,19 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddRazorComponents();
 
+// Configuración básica para HttpClient
+builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.Configuration["ApiBaseUrl"] ?? builder.Configuration["ApiSettings:BaseUrl"] ?? "https://localhost:7001") });
+
+// Registrar servicios para autenticación (placeholder para futura implementación)
+// builder.Services.AddScoped<CustomAuthenticationStateProvider>();
+// builder.Services.AddScoped<IAuthService, AuthService>();
+
+// Registrar ApiClients (placeholder para futura implementación)
+// builder.Services.AddScoped<IAuthApiClient, AuthApiClient>();
+// builder.Services.AddScoped<IUserApiClient, UserApiClient>();
+// builder.Services.AddScoped<IRoleApiClient, RoleApiClient>();
+// builder.Services.AddScoped<ITenantApiClient, TenantApiClient>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -16,7 +29,6 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 
 app.UseAntiforgery();
 
