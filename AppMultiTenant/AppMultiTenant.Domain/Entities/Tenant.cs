@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.Text.RegularExpressions;
 
 namespace AppMultiTenant.Domain.Entities
 {
@@ -33,8 +34,7 @@ namespace AppMultiTenant.Domain.Entities
             if (identifier.Length < 2 || identifier.Length > 50)
                 throw new ArgumentException("El identificador del inquilino debe tener entre 2 y 50 caracteres", nameof(identifier));
             
-            if (!System.Text.RegularExpressions.Regex.IsMatch(identifier, @"^[a-z0-9\-]+$"))
-                throw new ArgumentException("El identificador solo puede contener letras minúsculas, números y guiones", nameof(identifier));
+            ValidateIdentifierFormat(identifier);
             
             TenantId = Guid.NewGuid();
             Name = name;
@@ -75,6 +75,11 @@ namespace AppMultiTenant.Domain.Entities
         public DateTime CreatedDate { get; private set; }
 
         /// <summary>
+        /// Fecha de la última modificación del inquilino.
+        /// </summary>
+        public DateTime? LastModifiedDate { get; private set; }
+
+        /// <summary>
         /// Actualiza el nombre del inquilino.
         /// </summary>
         /// <param name="name">Nuevo nombre.</param>
@@ -87,6 +92,7 @@ namespace AppMultiTenant.Domain.Entities
                 throw new ArgumentException("El nombre del inquilino debe tener entre 2 y 100 caracteres", nameof(name));
             
             Name = name;
+            LastModifiedDate = DateTime.UtcNow;
         }
 
         /// <summary>
@@ -101,10 +107,10 @@ namespace AppMultiTenant.Domain.Entities
             if (identifier.Length < 2 || identifier.Length > 50)
                 throw new ArgumentException("El identificador del inquilino debe tener entre 2 y 50 caracteres", nameof(identifier));
             
-            if (!System.Text.RegularExpressions.Regex.IsMatch(identifier, @"^[a-z0-9\-]+$"))
-                throw new ArgumentException("El identificador solo puede contener letras minúsculas, números y guiones", nameof(identifier));
+            ValidateIdentifierFormat(identifier);
             
             Identifier = identifier;
+            LastModifiedDate = DateTime.UtcNow;
         }
 
         /// <summary>
@@ -113,6 +119,7 @@ namespace AppMultiTenant.Domain.Entities
         public void Activate()
         {
             IsActive = true;
+            LastModifiedDate = DateTime.UtcNow;
         }
 
         /// <summary>
@@ -121,6 +128,42 @@ namespace AppMultiTenant.Domain.Entities
         public void Deactivate()
         {
             IsActive = false;
+            LastModifiedDate = DateTime.UtcNow;
+        }
+
+        /// <summary>
+        /// Valida que el formato del identificador cumpla con los requisitos.
+        /// </summary>
+        /// <param name="identifier">Identificador a validar.</param>
+        /// <exception cref="ArgumentException">Si el formato no es válido.</exception>
+        private void ValidateIdentifierFormat(string identifier)
+        {
+            // El identificador debe comenzar con una letra, contener solo letras minúsculas, números y guiones, 
+            // y no puede terminar con guion ni contener guiones consecutivos
+            if (!Regex.IsMatch(identifier, @"^[a-z][a-z0-9\-]*[a-z0-9]$") || identifier.Contains("--"))
+                throw new ArgumentException("El identificador debe comenzar con una letra minúscula, terminar con letra o número, y no puede contener guiones consecutivos", nameof(identifier));
+        }
+
+        /// <summary>
+        /// Verifica si este inquilino puede ser accedido por los usuarios.
+        /// </summary>
+        /// <returns>True si el inquilino está activo y puede ser accedido, false de lo contrario.</returns>
+        public bool CanBeAccessed()
+        {
+            return IsActive;
+        }
+
+        /// <summary>
+        /// Verifica si este inquilino puede ser eliminado.
+        /// En una implementación real, esto podría verificar la existencia de datos relacionados.
+        /// </summary>
+        /// <param name="hasUsers">Indica si el inquilino tiene usuarios.</param>
+        /// <param name="hasSections">Indica si el inquilino tiene secciones definidas.</param>
+        /// <returns>True si el inquilino puede ser eliminado, false de lo contrario.</returns>
+        public bool CanBeDeleted(bool hasUsers, bool hasSections)
+        {
+            // Un inquilino no debería ser eliminado si tiene usuarios o secciones de datos
+            return !hasUsers && !hasSections;
         }
     }
 } 
