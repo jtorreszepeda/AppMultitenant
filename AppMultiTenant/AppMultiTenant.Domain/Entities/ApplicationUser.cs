@@ -56,7 +56,7 @@ namespace AppMultiTenant.Domain.Entities
         /// Nombre completo del usuario.
         /// </summary>
         [StringLength(100)]
-        public string FullName { get; private set; }
+        public string? FullName { get; private set; }
 
         /// <summary>
         /// Indica si el usuario está activo y puede iniciar sesión.
