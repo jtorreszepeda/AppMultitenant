@@ -56,7 +56,7 @@ namespace AppMultiTenant.Domain.Entities
         /// Nombre completo del usuario.
         /// </summary>
         [StringLength(100)]
-        public string? FullName { get; private set; }
+        public string FullName { get; private set; }
 
         /// <summary>
         /// Indica si el usuario está activo y puede iniciar sesión.
@@ -71,7 +71,7 @@ namespace AppMultiTenant.Domain.Entities
         /// <summary>
         /// Última fecha de inicio de sesión del usuario.
         /// </summary>
-        public DateTime? LastLoginDate { get; private set; }
+        public DateTime LastLoginDate { get; private set; }
 
         /// <summary>
         /// Actualiza el nombre completo del usuario.

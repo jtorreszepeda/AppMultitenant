@@ -49,7 +49,7 @@ namespace AppMultiTenant.Domain.Entities
         /// Descripción detallada del rol y sus responsabilidades.
         /// </summary>
         [StringLength(500)]
-        public string? Description { get; private set; }
+        public string Description { get; private set; }
 
         /// <summary>
         /// Indica si el rol está activo y puede ser asignado a usuarios.
