@@ -3,6 +3,7 @@ using AppMultiTenant.Application.Configuration;
 using AppMultiTenant.Application.Interfaces.Services;
 using AppMultiTenant.Infrastructure.Identity;
 using Microsoft.AspNetCore.Http;
+using AppMultiTenant.Server.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -99,6 +100,7 @@ void ConfigureMiddleware(WebApplication app, IWebHostEnvironment env)
     // Global error handling middleware will be added here in future tasks
     
     // Tenant resolution middleware will be added here in future tasks
+    app.UseTenantResolution();
     
     app.UseHttpsRedirection();
     
