@@ -1,4 +1,6 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using AppMultiTenant.Domain.Entities;
 using AppMultiTenant.Application.Interfaces.Services;
 
@@ -8,7 +10,7 @@ namespace AppMultiTenant.Infrastructure.Persistence
     /// Contexto de base de datos principal de la aplicación multi-inquilino.
     /// Implementa el enfoque de base de datos compartida con esquema compartido y discriminador TenantId.
     /// </summary>
-    public class AppDbContext : DbContext
+    public class AppDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, Guid>
     {
         private readonly Guid? _currentTenantId;
 
@@ -41,15 +43,20 @@ namespace AppMultiTenant.Infrastructure.Persistence
         /// </summary>
         public DbSet<Tenant> Tenants => Set<Tenant>();
 
-        // Aquí se agregarán más DbSet para otras entidades del dominio
-        // Ejemplos para futuras implementaciones:
-        // public DbSet<ApplicationUser> Users => Set<ApplicationUser>();
-        // public DbSet<ApplicationRole> Roles => Set<ApplicationRole>();
-        // public DbSet<Permission> Permissions => Set<Permission>();
-        // public DbSet<AppSectionDefinition> SectionDefinitions => Set<AppSectionDefinition>();
-        // public DbSet<FieldDefinition> FieldDefinitions => Set<FieldDefinition>();
-        // public DbSet<SectionDataEntry> SectionDataEntries => Set<SectionDataEntry>();
-        // public DbSet<FieldValue> FieldValues => Set<FieldValue>();
+        /// <summary>
+        /// Colección de permisos en el sistema
+        /// </summary>
+        public DbSet<Permission> Permissions => Set<Permission>();
+
+        /// <summary>
+        /// Colección de relaciones entre roles y permisos
+        /// </summary>
+        public DbSet<RolePermission> RolePermissions => Set<RolePermission>();
+
+        /// <summary>
+        /// Colección de definiciones de secciones de aplicación
+        /// </summary>
+        public DbSet<AppSectionDefinition> SectionDefinitions => Set<AppSectionDefinition>();
 
         /// <summary>
         /// Configura el modelo y aplica los Global Query Filters para el aislamiento de datos por inquilino
@@ -58,6 +65,15 @@ namespace AppMultiTenant.Infrastructure.Persistence
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            // Personalizar nombres de tablas de Identity
+            modelBuilder.Entity<ApplicationUser>().ToTable("Users");
+            modelBuilder.Entity<ApplicationRole>().ToTable("Roles");
+            modelBuilder.Entity<IdentityUserRole<Guid>>().ToTable("UserRoles");
+            modelBuilder.Entity<IdentityUserClaim<Guid>>().ToTable("UserClaims");
+            modelBuilder.Entity<IdentityUserLogin<Guid>>().ToTable("UserLogins");
+            modelBuilder.Entity<IdentityUserToken<Guid>>().ToTable("UserTokens");
+            modelBuilder.Entity<IdentityRoleClaim<Guid>>().ToTable("RoleClaims");
 
             // Configuración para la entidad Tenant
             modelBuilder.Entity<Tenant>(entity =>
@@ -69,23 +85,87 @@ namespace AppMultiTenant.Infrastructure.Persistence
                 entity.HasIndex(e => e.Identifier).IsUnique();
             });
 
-            // Aquí se incluirán las configuraciones para otras entidades multi-inquilino
-            // cuando se implementen, aplicando los Global Query Filters
-            
-            // Ejemplo para ilustrar cómo se aplicarán los filtros a futuras entidades:
-            /*
+            // Configuración para la entidad ApplicationUser
             modelBuilder.Entity<ApplicationUser>(entity =>
             {
-                entity.ToTable("Users");
-                entity.HasKey(e => e.Id);
+                // Propiedades adicionales a las de Identity
+                entity.Property(e => e.FullName).HasMaxLength(100);
+                entity.Property(e => e.TenantId).IsRequired();
+                entity.Property(e => e.CreatedDate).IsRequired();
+                
+                // Relación con Tenant
+                entity.HasOne<Tenant>().WithMany().HasForeignKey(e => e.TenantId);
                 
                 // Aplicar Global Query Filter para TenantId
-                // Esto filtrará automáticamente los usuarios por el inquilino actual
                 entity.HasQueryFilter(e => _currentTenantId == null || e.TenantId == _currentTenantId);
-                
-                // Otras configuraciones...
             });
-            */
+
+            // Configuración para la entidad ApplicationRole
+            modelBuilder.Entity<ApplicationRole>(entity =>
+            {
+                // Propiedades adicionales a las de Identity
+                entity.Property(e => e.Description).HasMaxLength(500);
+                entity.Property(e => e.TenantId).IsRequired();
+                entity.Property(e => e.CreatedDate).IsRequired();
+                
+                // Relación con Tenant
+                entity.HasOne<Tenant>().WithMany().HasForeignKey(e => e.TenantId);
+                
+                // Aplicar Global Query Filter para TenantId
+                entity.HasQueryFilter(e => _currentTenantId == null || e.TenantId == _currentTenantId);
+            });
+
+            // Configuración para la entidad Permission
+            modelBuilder.Entity<Permission>(entity =>
+            {
+                entity.ToTable("Permissions");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.Description).HasMaxLength(500);
+                entity.HasIndex(e => e.Name).IsUnique();
+            });
+
+            // Configuración para la entidad RolePermission
+            modelBuilder.Entity<RolePermission>(entity =>
+            {
+                entity.ToTable("RolePermissions");
+                entity.HasKey(e => new { e.Id, e.PermissionId });
+                entity.Property(e => e.TenantId).IsRequired();
+                
+                // Relaciones
+                entity.HasOne(e => e.Role)
+                      .WithMany()
+                      .HasForeignKey(e => e.Id)
+                      .OnDelete(DeleteBehavior.Cascade);
+                
+                entity.HasOne(e => e.Permission)
+                      .WithMany()
+                      .HasForeignKey(e => e.PermissionId)
+                      .OnDelete(DeleteBehavior.Cascade);
+                
+                // Aplicar Global Query Filter para TenantId
+                entity.HasQueryFilter(e => _currentTenantId == null || e.TenantId == _currentTenantId);
+            });
+
+            // Configuración para la entidad AppSectionDefinition
+            modelBuilder.Entity<AppSectionDefinition>(entity =>
+            {
+                entity.ToTable("SectionDefinitions");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.NormalizedName).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.Description).HasMaxLength(500);
+                entity.Property(e => e.TenantId).IsRequired();
+                
+                // Relación con Tenant
+                entity.HasOne<Tenant>().WithMany().HasForeignKey(e => e.TenantId);
+                
+                // Índice compuesto para evitar nombres duplicados dentro de un inquilino
+                entity.HasIndex(e => new { e.TenantId, e.NormalizedName }).IsUnique();
+                
+                // Aplicar Global Query Filter para TenantId
+                entity.HasQueryFilter(e => _currentTenantId == null || e.TenantId == _currentTenantId);
+            });
         }
 
         /// <summary>
