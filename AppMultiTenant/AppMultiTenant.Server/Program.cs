@@ -4,6 +4,7 @@ using AppMultiTenant.Application.Interfaces.Services;
 using AppMultiTenant.Infrastructure.Identity;
 using Microsoft.AspNetCore.Http;
 using AppMultiTenant.Server.Middleware;
+using AppMultiTenant.Infrastructure.Persistence.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -80,6 +81,9 @@ void ConfigureServices(IServiceCollection services, IConfiguration configuration
     
     // TenantResolverService - implementación básica para resolución de inquilinos
     services.AddScoped<ITenantResolverService, TenantResolverService>();
+    
+    // Persistence services - Entity Framework Core y repositorios
+    services.AddPersistenceServices(configuration);
     
     // Authentication services will be registered here in future tasks
 }
