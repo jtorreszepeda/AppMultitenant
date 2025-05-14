@@ -12,6 +12,7 @@ using AppMultiTenant.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using FluentValidation;
 
 namespace AppMultiTenant.Application.Services
 {
@@ -27,6 +28,7 @@ namespace AppMultiTenant.Application.Services
         private readonly JwtSettings _jwtSettings;
         private readonly IUnitOfWork _unitOfWork;
         private readonly ITenantResolverService _tenantResolver;
+        private readonly IValidationService _validationService;
 
         /// <summary>
         /// Constructor del servicio de autenticación
@@ -38,6 +40,7 @@ namespace AppMultiTenant.Application.Services
         /// <param name="jwtSettings">Configuración de tokens JWT</param>
         /// <param name="unitOfWork">Unit of Work para transacciones</param>
         /// <param name="tenantResolver">Servicio para obtener el inquilino actual</param>
+        /// <param name="validationService">Servicio de validación</param>
         public AuthService(
             IUserRepository userRepository,
             IPermissionRepository permissionRepository,
@@ -45,7 +48,8 @@ namespace AppMultiTenant.Application.Services
             UserManager<ApplicationUser> userManager,
             IOptions<JwtSettings> jwtSettings,
             IUnitOfWork unitOfWork,
-            ITenantResolverService tenantResolver)
+            ITenantResolverService tenantResolver,
+            IValidationService validationService)
         {
             _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
             _permissionRepository = permissionRepository ?? throw new ArgumentNullException(nameof(permissionRepository));
@@ -54,6 +58,7 @@ namespace AppMultiTenant.Application.Services
             _jwtSettings = jwtSettings?.Value ?? throw new ArgumentNullException(nameof(jwtSettings));
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _tenantResolver = tenantResolver ?? throw new ArgumentNullException(nameof(tenantResolver));
+            _validationService = validationService ?? throw new ArgumentNullException(nameof(validationService));
         }
 
         /// <summary>
@@ -104,8 +109,9 @@ namespace AppMultiTenant.Application.Services
         /// <returns>Token JWT y información básica del usuario autenticado, o null si la autenticación falla</returns>
         public async Task<(string Token, ApplicationUser User)> LoginAsync(string email, string password, Guid tenantId)
         {
-            if (string.IsNullOrEmpty(email)) throw new ArgumentException("El email no puede estar vacío", nameof(email));
-            if (string.IsNullOrEmpty(password)) throw new ArgumentException("La contraseña no puede estar vacía", nameof(password));
+            // Validar parámetros usando FluentValidation
+            await _validationService.ValidateAndThrowAsync((Email: email, Password: password));
+
             if (tenantId == Guid.Empty) throw new ArgumentException("El ID del inquilino no puede estar vacío", nameof(tenantId));
 
             // Obtener usuario por email y tenantId
@@ -157,11 +163,8 @@ namespace AppMultiTenant.Application.Services
         /// <returns>El usuario creado y un token JWT si el registro es exitoso</returns>
         public async Task<(ApplicationUser User, string Token)> RegisterUserAsync(string userName, string email, string password, string fullName, Guid tenantId)
         {
-            if (string.IsNullOrEmpty(userName)) throw new ArgumentException("El nombre de usuario no puede estar vacío", nameof(userName));
-            if (string.IsNullOrEmpty(email)) throw new ArgumentException("El email no puede estar vacío", nameof(email));
-            if (string.IsNullOrEmpty(password)) throw new ArgumentException("La contraseña no puede estar vacía", nameof(password));
-            if (string.IsNullOrEmpty(fullName)) throw new ArgumentException("El nombre completo no puede estar vacío", nameof(fullName));
-            if (tenantId == Guid.Empty) throw new ArgumentException("El ID del inquilino no puede estar vacío", nameof(tenantId));
+            // Validar parámetros usando FluentValidation
+            await _validationService.ValidateAndThrowAsync((UserName: userName, Email: email, Password: password, FullName: fullName, TenantId: tenantId));
 
             // Verificar si ya existe un usuario con el mismo email en el mismo inquilino
             var existingUser = await _userRepository.GetByEmailAsync(email, tenantId);
