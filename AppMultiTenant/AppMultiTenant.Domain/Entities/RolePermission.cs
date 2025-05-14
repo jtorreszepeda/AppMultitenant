@@ -27,7 +27,7 @@ namespace AppMultiTenant.Domain.Entities
             ValidatePermissionId(permissionId);
             ValidateTenantId(tenantId);
             
-            RoleId = roleId;
+            Id = roleId;
             PermissionId = permissionId;
             TenantId = tenantId;
             CreatedDate = DateTime.UtcNow;
@@ -37,7 +37,7 @@ namespace AppMultiTenant.Domain.Entities
         /// ID del rol en esta relación.
         /// </summary>
         [Required]
-        public Guid RoleId { get; private set; }
+        public Guid Id { get; private set; }
 
         /// <summary>
         /// ID del permiso en esta relación.
@@ -60,7 +60,7 @@ namespace AppMultiTenant.Domain.Entities
         /// <summary>
         /// Propiedad de navegación al rol.
         /// </summary>
-        [ForeignKey(nameof(RoleId))]
+        [ForeignKey(nameof(Id))]
         public virtual ApplicationRole Role { get; private set; }
 
         /// <summary>

@@ -48,7 +48,7 @@ namespace AppMultiTenant.Domain.Entities
             
             ValidatePermissionName(name);
             
-            PermissionId = Guid.NewGuid();
+            Id = Guid.NewGuid();
             Name = name;
             Description = description ?? string.Empty;
             IsSystemPermission = isSystemPermission;
@@ -59,7 +59,7 @@ namespace AppMultiTenant.Domain.Entities
         /// Identificador único del permiso.
         /// </summary>
         [Key]
-        public Guid PermissionId { get; private set; }
+        public Guid Id { get; private set; }
         
         /// <summary>
         /// Nombre único del permiso, utilizado para identificarlo en el sistema.

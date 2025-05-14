@@ -27,7 +27,7 @@ namespace AppMultiTenant.Domain.Entities
             ValidateSectionName(name);
             ValidateDescription(description);
             
-            AppSectionDefinitionId = Guid.NewGuid();
+            Id = Guid.NewGuid();
             TenantId = tenantId;
             Name = name;
             NormalizedName = NormalizeSectionName(name);
@@ -40,7 +40,7 @@ namespace AppMultiTenant.Domain.Entities
         /// Identificador único de la definición de sección.
         /// </summary>
         [Key]
-        public Guid AppSectionDefinitionId { get; private set; }
+        public Guid Id { get; private set; }
         
         /// <summary>
         /// Identificador del inquilino al que pertenece esta definición de sección.
