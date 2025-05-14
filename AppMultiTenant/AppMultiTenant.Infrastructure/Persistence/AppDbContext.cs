@@ -64,6 +64,9 @@ namespace AppMultiTenant.Infrastructure.Persistence
         /// <param name="modelBuilder">Builder para el modelo de EF Core</param>
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            // Configurar el esquema de la base de datos
+            modelBuilder.HasDefaultSchema("app_multi_tenant");
+
             base.OnModelCreating(modelBuilder);
 
             // Personalizar nombres de tablas de Identity
@@ -132,10 +135,11 @@ namespace AppMultiTenant.Infrastructure.Persistence
                 entity.HasKey(e => new { e.Id, e.PermissionId });
                 entity.Property(e => e.TenantId).IsRequired();
                 
+                // Clarificando en los comentarios que Id es en realidad RoleId
                 // Relaciones
                 entity.HasOne(e => e.Role)
                       .WithMany()
-                      .HasForeignKey(e => e.Id)
+                      .HasForeignKey(e => e.Id) // Id es RoleId en RolePermission
                       .OnDelete(DeleteBehavior.Cascade);
                 
                 entity.HasOne(e => e.Permission)
