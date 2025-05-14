@@ -17,6 +17,7 @@ namespace AppMultiTenant.Application.Services
         private readonly IPermissionRepository _permissionRepository;
         private readonly IRoleRepository _roleRepository;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ITenantResolverService _tenantResolver;
 
         /// <summary>
         /// Constructor con inyección de dependencias
@@ -25,17 +26,103 @@ namespace AppMultiTenant.Application.Services
         /// <param name="permissionRepository">Repositorio de permisos</param>
         /// <param name="roleRepository">Repositorio de roles</param>
         /// <param name="unitOfWork">Unidad de trabajo para transacciones</param>
+        /// <param name="tenantResolver">Servicio para obtener el inquilino actual</param>
         public TenantSectionDefinitionService(
             IAppSectionDefinitionRepository sectionDefinitionRepository,
             IPermissionRepository permissionRepository,
             IRoleRepository roleRepository,
-            IUnitOfWork unitOfWork)
+            IUnitOfWork unitOfWork,
+            ITenantResolverService tenantResolver)
         {
             _sectionDefinitionRepository = sectionDefinitionRepository ?? throw new ArgumentNullException(nameof(sectionDefinitionRepository));
             _permissionRepository = permissionRepository ?? throw new ArgumentNullException(nameof(permissionRepository));
             _roleRepository = roleRepository ?? throw new ArgumentNullException(nameof(roleRepository));
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+            _tenantResolver = tenantResolver ?? throw new ArgumentNullException(nameof(tenantResolver));
         }
+
+        /// <summary>
+        /// Obtiene el ID del inquilino actual del servicio resolutor
+        /// </summary>
+        /// <returns>ID del inquilino actual</returns>
+        /// <exception cref="InvalidOperationException">Si no hay inquilino actual</exception>
+        private Guid GetCurrentTenantId()
+        {
+            var tenantId = _tenantResolver.GetCurrentTenantId();
+            if (!tenantId.HasValue)
+            {
+                throw new InvalidOperationException("No se pudo resolver el inquilino actual. Esta operación requiere un contexto de inquilino.");
+            }
+            return tenantId.Value;
+        }
+
+        #region Métodos con TenantId automático (sobrecargados)
+
+        /// <inheritdoc/>
+        public async Task<AppSectionDefinition> CreateSectionDefinitionAsync(string name, string description)
+        {
+            return await CreateSectionDefinitionAsync(name, description, GetCurrentTenantId());
+        }
+
+        /// <inheritdoc/>
+        public async Task<AppSectionDefinition> GetSectionDefinitionByIdAsync(Guid sectionDefinitionId)
+        {
+            return await GetSectionDefinitionByIdAsync(sectionDefinitionId, GetCurrentTenantId());
+        }
+
+        /// <inheritdoc/>
+        public async Task<AppSectionDefinition> GetSectionDefinitionByNameAsync(string name)
+        {
+            return await GetSectionDefinitionByNameAsync(name, GetCurrentTenantId());
+        }
+
+        /// <inheritdoc/>
+        public async Task<IEnumerable<AppSectionDefinition>> GetAllSectionDefinitionsAsync()
+        {
+            return await GetAllSectionDefinitionsAsync(GetCurrentTenantId());
+        }
+
+        /// <inheritdoc/>
+        public async Task<AppSectionDefinition> UpdateSectionDefinitionNameAsync(Guid sectionDefinitionId, string name)
+        {
+            return await UpdateSectionDefinitionNameAsync(sectionDefinitionId, name, GetCurrentTenantId());
+        }
+
+        /// <inheritdoc/>
+        public async Task<AppSectionDefinition> UpdateSectionDefinitionDescriptionAsync(Guid sectionDefinitionId, string description)
+        {
+            return await UpdateSectionDefinitionDescriptionAsync(sectionDefinitionId, description, GetCurrentTenantId());
+        }
+
+        /// <inheritdoc/>
+        public async Task<bool> DeleteSectionDefinitionAsync(Guid sectionDefinitionId, bool force = false)
+        {
+            return await DeleteSectionDefinitionAsync(sectionDefinitionId, GetCurrentTenantId(), force);
+        }
+
+        /// <inheritdoc/>
+        public async Task<bool> IsSectionNameAvailableAsync(string name, Guid? excludeSectionDefinitionId = null)
+        {
+            return await IsSectionNameAvailableAsync(name, GetCurrentTenantId(), excludeSectionDefinitionId);
+        }
+
+        /// <inheritdoc/>
+        public async Task<bool> CanDeleteSectionDefinitionAsync(Guid sectionDefinitionId)
+        {
+            return await CanDeleteSectionDefinitionAsync(sectionDefinitionId, GetCurrentTenantId());
+        }
+
+        /// <inheritdoc/>
+        public async Task<IEnumerable<Permission>> CreateAndAssignSectionPermissionsAsync(
+            Guid sectionDefinitionId, string sectionName, Guid adminRoleId)
+        {
+            return await CreateAndAssignSectionPermissionsAsync(
+                sectionDefinitionId, sectionName, adminRoleId, GetCurrentTenantId());
+        }
+
+        #endregion
+
+        #region Métodos con TenantId explícito
 
         /// <inheritdoc/>
         public async Task<AppSectionDefinition> CreateSectionDefinitionAsync(string name, string description, Guid tenantId)
@@ -370,5 +457,7 @@ namespace AppMultiTenant.Application.Services
                 }
             }
         }
+        
+        #endregion
     }
 } 

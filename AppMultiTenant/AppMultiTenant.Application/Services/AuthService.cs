@@ -26,6 +26,7 @@ namespace AppMultiTenant.Application.Services
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly JwtSettings _jwtSettings;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ITenantResolverService _tenantResolver;
 
         /// <summary>
         /// Constructor del servicio de autenticación
@@ -36,13 +37,15 @@ namespace AppMultiTenant.Application.Services
         /// <param name="userManager">Gestor de usuarios de Identity</param>
         /// <param name="jwtSettings">Configuración de tokens JWT</param>
         /// <param name="unitOfWork">Unit of Work para transacciones</param>
+        /// <param name="tenantResolver">Servicio para obtener el inquilino actual</param>
         public AuthService(
             IUserRepository userRepository,
             IPermissionRepository permissionRepository,
             IRoleRepository roleRepository,
             UserManager<ApplicationUser> userManager,
             IOptions<JwtSettings> jwtSettings,
-            IUnitOfWork unitOfWork)
+            IUnitOfWork unitOfWork,
+            ITenantResolverService tenantResolver)
         {
             _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
             _permissionRepository = permissionRepository ?? throw new ArgumentNullException(nameof(permissionRepository));
@@ -50,8 +53,48 @@ namespace AppMultiTenant.Application.Services
             _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
             _jwtSettings = jwtSettings?.Value ?? throw new ArgumentNullException(nameof(jwtSettings));
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+            _tenantResolver = tenantResolver ?? throw new ArgumentNullException(nameof(tenantResolver));
         }
 
+        /// <summary>
+        /// Obtiene el ID del inquilino actual del servicio resolutor
+        /// </summary>
+        /// <returns>ID del inquilino actual</returns>
+        /// <exception cref="InvalidOperationException">Si no hay inquilino actual</exception>
+        private Guid GetCurrentTenantId()
+        {
+            var tenantId = _tenantResolver.GetCurrentTenantId();
+            if (!tenantId.HasValue)
+            {
+                throw new InvalidOperationException("No se pudo resolver el inquilino actual. Esta operación requiere un contexto de inquilino.");
+            }
+            return tenantId.Value;
+        }
+
+        #region Métodos con TenantId automático (sobrecargados)
+
+        /// <inheritdoc/>
+        public async Task<(string Token, ApplicationUser User)> LoginAsync(string email, string password)
+        {
+            return await LoginAsync(email, password, GetCurrentTenantId());
+        }
+
+        /// <inheritdoc/>
+        public async Task<(ApplicationUser User, string Token)> RegisterUserAsync(string userName, string email, string password, string fullName)
+        {
+            return await RegisterUserAsync(userName, email, password, fullName, GetCurrentTenantId());
+        }
+
+        /// <inheritdoc/>
+        public async Task<bool> UserHasPermissionAsync(Guid userId, string permissionName)
+        {
+            return await UserHasPermissionAsync(userId, permissionName, GetCurrentTenantId());
+        }
+
+        #endregion
+
+        #region Métodos con TenantId explícito
+        
         /// <summary>
         /// Autentica un usuario basado en sus credenciales y genera un token JWT
         /// </summary>
@@ -317,5 +360,7 @@ namespace AppMultiTenant.Application.Services
                 return null;
             }
         }
+        
+        #endregion
     }
 } 

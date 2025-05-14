@@ -10,7 +10,108 @@ namespace AppMultiTenant.Application.Interfaces.Services
     /// </summary>
     public interface ITenantRoleService
     {
-        #region Roles
+        #region Métodos con TenantId automático
+        
+        /// <summary>
+        /// Crea un nuevo rol dentro del inquilino actual
+        /// </summary>
+        /// <param name="name">Nombre del rol</param>
+        /// <param name="description">Descripción del rol</param>
+        /// <returns>El rol creado</returns>
+        Task<ApplicationRole> CreateRoleAsync(string name, string description);
+        
+        /// <summary>
+        /// Obtiene un rol por su Id, verificando que pertenezca al inquilino actual
+        /// </summary>
+        /// <param name="roleId">Id del rol</param>
+        /// <returns>El rol si existe en el inquilino, null en caso contrario</returns>
+        Task<ApplicationRole> GetRoleByIdAsync(Guid roleId);
+        
+        /// <summary>
+        /// Obtiene un rol por su nombre, verificando que pertenezca al inquilino actual
+        /// </summary>
+        /// <param name="name">Nombre del rol</param>
+        /// <returns>El rol si existe en el inquilino, null en caso contrario</returns>
+        Task<ApplicationRole> GetRoleByNameAsync(string name);
+        
+        /// <summary>
+        /// Obtiene todos los roles del inquilino actual
+        /// </summary>
+        /// <returns>Lista de roles del inquilino</returns>
+        Task<IEnumerable<ApplicationRole>> GetAllRolesAsync();
+        
+        /// <summary>
+        /// Actualiza el nombre de un rol del inquilino actual
+        /// </summary>
+        /// <param name="roleId">Id del rol</param>
+        /// <param name="name">Nuevo nombre</param>
+        /// <returns>El rol actualizado</returns>
+        Task<ApplicationRole> UpdateRoleNameAsync(Guid roleId, string name);
+        
+        /// <summary>
+        /// Actualiza la descripción de un rol del inquilino actual
+        /// </summary>
+        /// <param name="roleId">Id del rol</param>
+        /// <param name="description">Nueva descripción</param>
+        /// <returns>El rol actualizado</returns>
+        Task<ApplicationRole> UpdateRoleDescriptionAsync(Guid roleId, string description);
+        
+        /// <summary>
+        /// Elimina un rol del inquilino actual (si es posible)
+        /// </summary>
+        /// <param name="roleId">Id del rol</param>
+        /// <returns>True si se eliminó correctamente, false si no se pudo eliminar</returns>
+        Task<bool> DeleteRoleAsync(Guid roleId);
+        
+        /// <summary>
+        /// Verifica si un nombre de rol está disponible dentro del inquilino actual
+        /// </summary>
+        /// <param name="name">Nombre a verificar</param>
+        /// <param name="excludeRoleId">Id de rol a excluir de la verificación (para ediciones)</param>
+        /// <returns>True si el nombre está disponible, false si ya está en uso</returns>
+        Task<bool> IsRoleNameAvailableAsync(string name, Guid? excludeRoleId = null);
+        
+        /// <summary>
+        /// Obtiene los permisos asignados a un rol del inquilino actual
+        /// </summary>
+        /// <param name="roleId">Id del rol</param>
+        /// <returns>Lista de permisos asignados al rol</returns>
+        Task<IEnumerable<Permission>> GetRolePermissionsAsync(Guid roleId);
+        
+        /// <summary>
+        /// Asigna permisos a un rol del inquilino actual
+        /// </summary>
+        /// <param name="roleId">Id del rol</param>
+        /// <param name="permissionIds">Lista de Ids de permisos a asignar</param>
+        /// <returns>Lista de permisos asignados</returns>
+        Task<IEnumerable<Permission>> AssignPermissionsToRoleAsync(Guid roleId, IEnumerable<Guid> permissionIds);
+        
+        /// <summary>
+        /// Remueve permisos de un rol del inquilino actual
+        /// </summary>
+        /// <param name="roleId">Id del rol</param>
+        /// <param name="permissionIds">Lista de Ids de permisos a remover</param>
+        /// <returns>True si la operación fue exitosa</returns>
+        Task<bool> RemovePermissionsFromRoleAsync(Guid roleId, IEnumerable<Guid> permissionIds);
+        
+        /// <summary>
+        /// Verifica si un usuario tiene un permiso específico en el inquilino actual
+        /// </summary>
+        /// <param name="userId">Id del usuario</param>
+        /// <param name="permissionName">Nombre del permiso</param>
+        /// <returns>True si el usuario tiene el permiso, false en caso contrario</returns>
+        Task<bool> UserHasPermissionAsync(Guid userId, string permissionName);
+        
+        /// <summary>
+        /// Obtiene todos los permisos que tiene un usuario del inquilino actual
+        /// </summary>
+        /// <param name="userId">Id del usuario</param>
+        /// <returns>Lista de permisos del usuario</returns>
+        Task<IEnumerable<Permission>> GetUserPermissionsAsync(Guid userId);
+        
+        #endregion
+
+        #region Métodos con TenantId explícito
         
         /// <summary>
         /// Crea un nuevo rol dentro del inquilino

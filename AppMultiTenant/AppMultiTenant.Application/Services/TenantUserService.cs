@@ -18,6 +18,7 @@ namespace AppMultiTenant.Application.Services
         private readonly IRoleRepository _roleRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly ITenantResolverService _tenantResolver;
 
         /// <summary>
         /// Constructor del servicio de gestión de usuarios de inquilino
@@ -26,17 +27,137 @@ namespace AppMultiTenant.Application.Services
         /// <param name="roleRepository">Repositorio de roles</param>
         /// <param name="unitOfWork">Unit of Work para transacciones</param>
         /// <param name="userManager">Gestor de usuarios de Identity</param>
+        /// <param name="tenantResolver">Servicio para obtener el inquilino actual</param>
         public TenantUserService(
             IUserRepository userRepository,
             IRoleRepository roleRepository,
             IUnitOfWork unitOfWork,
-            UserManager<ApplicationUser> userManager)
+            UserManager<ApplicationUser> userManager,
+            ITenantResolverService tenantResolver)
         {
             _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
             _roleRepository = roleRepository ?? throw new ArgumentNullException(nameof(roleRepository));
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
+            _tenantResolver = tenantResolver ?? throw new ArgumentNullException(nameof(tenantResolver));
         }
+
+        /// <summary>
+        /// Obtiene el ID del inquilino actual del servicio resolutor
+        /// </summary>
+        /// <returns>ID del inquilino actual</returns>
+        /// <exception cref="InvalidOperationException">Si no hay inquilino actual</exception>
+        private Guid GetCurrentTenantId()
+        {
+            var tenantId = _tenantResolver.GetCurrentTenantId();
+            if (!tenantId.HasValue)
+            {
+                throw new InvalidOperationException("No se pudo resolver el inquilino actual. Esta operación requiere un contexto de inquilino.");
+            }
+            return tenantId.Value;
+        }
+
+        #region Métodos con TenantId automático (sobrecargados)
+
+        /// <inheritdoc />
+        public async Task<ApplicationUser> CreateUserAsync(string userName, string email, string password, string fullName)
+        {
+            return await CreateUserAsync(userName, email, password, fullName, GetCurrentTenantId());
+        }
+        
+        /// <inheritdoc />
+        public async Task<ApplicationUser> GetUserByIdAsync(Guid userId)
+        {
+            return await GetUserByIdAsync(userId, GetCurrentTenantId());
+        }
+        
+        /// <inheritdoc />
+        public async Task<ApplicationUser> GetUserByEmailAsync(string email)
+        {
+            return await GetUserByEmailAsync(email, GetCurrentTenantId());
+        }
+        
+        /// <inheritdoc />
+        public async Task<(IEnumerable<ApplicationUser> Users, int TotalCount)> GetAllUsersAsync(bool includeInactive = false, int pageNumber = 1, int pageSize = 20)
+        {
+            return await GetAllUsersAsync(GetCurrentTenantId(), includeInactive, pageNumber, pageSize);
+        }
+        
+        /// <inheritdoc />
+        public async Task<ApplicationUser> UpdateUserFullNameAsync(Guid userId, string fullName)
+        {
+            return await UpdateUserFullNameAsync(userId, fullName, GetCurrentTenantId());
+        }
+        
+        /// <inheritdoc />
+        public async Task<ApplicationUser> UpdateUserEmailAsync(Guid userId, string email)
+        {
+            return await UpdateUserEmailAsync(userId, email, GetCurrentTenantId());
+        }
+        
+        /// <inheritdoc />
+        public async Task<ApplicationUser> UpdateUserNameAsync(Guid userId, string userName)
+        {
+            return await UpdateUserNameAsync(userId, userName, GetCurrentTenantId());
+        }
+        
+        /// <inheritdoc />
+        public async Task<bool> ChangeUserPasswordAsync(Guid userId, string newPassword, string currentPassword = null)
+        {
+            return await ChangeUserPasswordAsync(userId, newPassword, currentPassword, GetCurrentTenantId());
+        }
+        
+        /// <inheritdoc />
+        public async Task<bool> ResetUserPasswordAsync(Guid userId, string newPassword)
+        {
+            return await ResetUserPasswordAsync(userId, newPassword, GetCurrentTenantId());
+        }
+        
+        /// <inheritdoc />
+        public async Task<ApplicationUser> ActivateUserAsync(Guid userId)
+        {
+            return await ActivateUserAsync(userId, GetCurrentTenantId());
+        }
+        
+        /// <inheritdoc />
+        public async Task<ApplicationUser> DeactivateUserAsync(Guid userId)
+        {
+            return await DeactivateUserAsync(userId, GetCurrentTenantId());
+        }
+        
+        /// <inheritdoc />
+        public async Task<bool> DeleteUserAsync(Guid userId, Guid currentUserId)
+        {
+            return await DeleteUserAsync(userId, GetCurrentTenantId(), currentUserId);
+        }
+        
+        /// <inheritdoc />
+        public async Task<bool> IsEmailAvailableAsync(string email, Guid? excludeUserId = null)
+        {
+            return await IsEmailAvailableAsync(email, GetCurrentTenantId(), excludeUserId);
+        }
+        
+        /// <inheritdoc />
+        public async Task<IEnumerable<ApplicationRole>> AssignRolesToUserAsync(Guid userId, IEnumerable<Guid> roleIds)
+        {
+            return await AssignRolesToUserAsync(userId, roleIds, GetCurrentTenantId());
+        }
+        
+        /// <inheritdoc />
+        public async Task<IEnumerable<ApplicationRole>> GetUserRolesAsync(Guid userId)
+        {
+            return await GetUserRolesAsync(userId, GetCurrentTenantId());
+        }
+        
+        /// <inheritdoc />
+        public async Task<bool> RemoveRolesFromUserAsync(Guid userId, IEnumerable<Guid> roleIds)
+        {
+            return await RemoveRolesFromUserAsync(userId, roleIds, GetCurrentTenantId());
+        }
+
+        #endregion
+
+        #region Métodos originales con TenantId explícito
 
         /// <inheritdoc />
         public async Task<ApplicationUser> CreateUserAsync(string userName, string email, string password, string fullName, Guid tenantId)
@@ -495,5 +616,7 @@ namespace AppMultiTenant.Application.Services
             
             return true;
         }
+
+        #endregion
     }
 } 

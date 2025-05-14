@@ -16,6 +16,7 @@ namespace AppMultiTenant.Application.Services
         private readonly IRoleRepository _roleRepository;
         private readonly IPermissionRepository _permissionRepository;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ITenantResolverService _tenantResolver;
 
         /// <summary>
         /// Constructor con inyección de dependencias
@@ -23,15 +24,115 @@ namespace AppMultiTenant.Application.Services
         /// <param name="roleRepository">Repositorio de roles</param>
         /// <param name="permissionRepository">Repositorio de permisos</param>
         /// <param name="unitOfWork">Unidad de trabajo para transacciones</param>
+        /// <param name="tenantResolver">Servicio para obtener el inquilino actual</param>
         public TenantRoleService(
             IRoleRepository roleRepository,
             IPermissionRepository permissionRepository,
-            IUnitOfWork unitOfWork)
+            IUnitOfWork unitOfWork,
+            ITenantResolverService tenantResolver)
         {
             _roleRepository = roleRepository ?? throw new ArgumentNullException(nameof(roleRepository));
             _permissionRepository = permissionRepository ?? throw new ArgumentNullException(nameof(permissionRepository));
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+            _tenantResolver = tenantResolver ?? throw new ArgumentNullException(nameof(tenantResolver));
         }
+
+        /// <summary>
+        /// Obtiene el ID del inquilino actual del servicio resolutor
+        /// </summary>
+        /// <returns>ID del inquilino actual</returns>
+        /// <exception cref="InvalidOperationException">Si no hay inquilino actual</exception>
+        private Guid GetCurrentTenantId()
+        {
+            var tenantId = _tenantResolver.GetCurrentTenantId();
+            if (!tenantId.HasValue)
+            {
+                throw new InvalidOperationException("No se pudo resolver el inquilino actual. Esta operación requiere un contexto de inquilino.");
+            }
+            return tenantId.Value;
+        }
+
+        #region Métodos con TenantId automático (sobrecargados)
+
+        /// <inheritdoc/>
+        public async Task<ApplicationRole> CreateRoleAsync(string name, string description)
+        {
+            return await CreateRoleAsync(name, description, GetCurrentTenantId());
+        }
+
+        /// <inheritdoc/>
+        public async Task<ApplicationRole> GetRoleByIdAsync(Guid roleId)
+        {
+            return await GetRoleByIdAsync(roleId, GetCurrentTenantId());
+        }
+
+        /// <inheritdoc/>
+        public async Task<ApplicationRole> GetRoleByNameAsync(string name)
+        {
+            return await GetRoleByNameAsync(name, GetCurrentTenantId());
+        }
+
+        /// <inheritdoc/>
+        public async Task<IEnumerable<ApplicationRole>> GetAllRolesAsync()
+        {
+            return await GetAllRolesAsync(GetCurrentTenantId());
+        }
+
+        /// <inheritdoc/>
+        public async Task<ApplicationRole> UpdateRoleNameAsync(Guid roleId, string name)
+        {
+            return await UpdateRoleNameAsync(roleId, name, GetCurrentTenantId());
+        }
+
+        /// <inheritdoc/>
+        public async Task<ApplicationRole> UpdateRoleDescriptionAsync(Guid roleId, string description)
+        {
+            return await UpdateRoleDescriptionAsync(roleId, description, GetCurrentTenantId());
+        }
+
+        /// <inheritdoc/>
+        public async Task<bool> DeleteRoleAsync(Guid roleId)
+        {
+            return await DeleteRoleAsync(roleId, GetCurrentTenantId());
+        }
+
+        /// <inheritdoc/>
+        public async Task<bool> IsRoleNameAvailableAsync(string name, Guid? excludeRoleId = null)
+        {
+            return await IsRoleNameAvailableAsync(name, GetCurrentTenantId(), excludeRoleId);
+        }
+
+        /// <inheritdoc/>
+        public async Task<IEnumerable<Permission>> GetRolePermissionsAsync(Guid roleId)
+        {
+            return await GetRolePermissionsAsync(roleId, GetCurrentTenantId());
+        }
+
+        /// <inheritdoc/>
+        public async Task<IEnumerable<Permission>> AssignPermissionsToRoleAsync(Guid roleId, IEnumerable<Guid> permissionIds)
+        {
+            return await AssignPermissionsToRoleAsync(roleId, permissionIds, GetCurrentTenantId());
+        }
+
+        /// <inheritdoc/>
+        public async Task<bool> RemovePermissionsFromRoleAsync(Guid roleId, IEnumerable<Guid> permissionIds)
+        {
+            return await RemovePermissionsFromRoleAsync(roleId, permissionIds, GetCurrentTenantId());
+        }
+
+        /// <inheritdoc/>
+        public async Task<bool> UserHasPermissionAsync(Guid userId, string permissionName)
+        {
+            return await UserHasPermissionAsync(userId, permissionName, GetCurrentTenantId());
+        }
+
+        /// <inheritdoc/>
+        public async Task<IEnumerable<Permission>> GetUserPermissionsAsync(Guid userId)
+        {
+            return await GetUserPermissionsAsync(userId, GetCurrentTenantId());
+        }
+
+        #endregion
 
         #region Roles
 

@@ -9,6 +9,38 @@ namespace AppMultiTenant.Application.Interfaces.Services
     /// </summary>
     public interface IAuthService
     {
+        #region Métodos con TenantId automático
+        
+        /// <summary>
+        /// Autentica un usuario basado en sus credenciales y genera un token JWT, usando el inquilino actual
+        /// </summary>
+        /// <param name="email">Email del usuario</param>
+        /// <param name="password">Contraseña del usuario</param>
+        /// <returns>Token JWT y información básica del usuario autenticado, o null si la autenticación falla</returns>
+        Task<(string Token, ApplicationUser User)> LoginAsync(string email, string password);
+
+        /// <summary>
+        /// Registra un nuevo usuario en el sistema dentro del inquilino actual
+        /// </summary>
+        /// <param name="userName">Nombre de usuario</param>
+        /// <param name="email">Email del usuario</param>
+        /// <param name="password">Contraseña del usuario</param>
+        /// <param name="fullName">Nombre completo del usuario</param>
+        /// <returns>El usuario creado y un token JWT si el registro es exitoso</returns>
+        Task<(ApplicationUser User, string Token)> RegisterUserAsync(string userName, string email, string password, string fullName);
+
+        /// <summary>
+        /// Valida que un usuario tenga un permiso específico en el inquilino actual
+        /// </summary>
+        /// <param name="userId">Id del usuario</param>
+        /// <param name="permissionName">Nombre del permiso a verificar</param>
+        /// <returns>True si el usuario tiene el permiso, false en caso contrario</returns>
+        Task<bool> UserHasPermissionAsync(Guid userId, string permissionName);
+        
+        #endregion
+        
+        #region Métodos con TenantId explícito
+        
         /// <summary>
         /// Autentica un usuario basado en sus credenciales y genera un token JWT
         /// </summary>
@@ -51,5 +83,7 @@ namespace AppMultiTenant.Application.Interfaces.Services
         /// <param name="userId">Id del usuario</param>
         /// <returns>Task de la operación</returns>
         Task LogoutAsync(Guid userId);
+        
+        #endregion
     }
 } 
