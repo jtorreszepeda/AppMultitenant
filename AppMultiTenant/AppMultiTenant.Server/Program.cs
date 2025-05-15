@@ -5,6 +5,7 @@ using AppMultiTenant.Infrastructure.Identity;
 using Microsoft.AspNetCore.Http;
 using AppMultiTenant.Server.Middleware;
 using AppMultiTenant.Infrastructure.Persistence.Configuration;
+using Serilog.Context;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,7 +17,23 @@ if (builder.Environment.IsDevelopment())
 
 // Configure Serilog
 builder.Host.UseSerilog((context, configuration) => 
-    configuration.ReadFrom.Configuration(context.Configuration));
+    configuration
+        .ReadFrom.Configuration(context.Configuration)
+        .Enrich.FromLogContext());
+
+// Add Application Insights if configured
+var appInsightsConnectionString = builder.Configuration["ApplicationInsights:ConnectionString"];
+if (!string.IsNullOrEmpty(appInsightsConnectionString))
+{
+    builder.Services.AddApplicationInsightsTelemetry(options =>
+    {
+        options.ConnectionString = appInsightsConnectionString;
+        options.EnableAdaptiveSampling = builder.Configuration.GetValue<bool>("ApplicationInsights:EnableAdaptiveSampling", true);
+        options.EnableHeartbeat = builder.Configuration.GetValue<bool>("ApplicationInsights:EnableHeartbeat", true);
+    });
+    
+    Log.Information("Application Insights telemetry enabled");
+}
 
 // Add services to the container.
 
@@ -29,7 +46,8 @@ var app = builder.Build();
 ConfigureMiddleware(app, app.Environment);
 
 // Ensure we log application startup
-Log.Information("Application starting up");
+Log.Information("Application starting up in {Environment} environment", app.Environment.EnvironmentName);
+
 // Log some configuration values (without sensitive data)
 Log.Information("Application Configuration: TenantResolutionStrategy = {TenantResolutionStrategy}", 
     builder.Configuration["TenantConfiguration:TenantResolutionStrategy"]);
@@ -116,7 +134,27 @@ void ConfigureMiddleware(WebApplication app, IWebHostEnvironment env)
     }
     
     // Request logging middleware
-    app.UseSerilogRequestLogging();
+    app.UseSerilogRequestLogging(options => 
+    {
+        // Customize the message template
+        options.MessageTemplate = "HTTP {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000} ms";
+        
+        // Enrich with custom properties
+        options.EnrichDiagnosticContext = (diagnosticContext, httpContext) => 
+        {
+            diagnosticContext.Set("RequestHost", httpContext.Request.Host.Value);
+            diagnosticContext.Set("UserAgent", httpContext.Request.Headers["User-Agent"].ToString());
+            diagnosticContext.Set("RemoteIpAddress", httpContext.Connection.RemoteIpAddress?.ToString());
+            
+            // Try to get TenantId and add it to the log context if available
+            var tenantId = httpContext.Items["TenantId"]?.ToString();
+            if (!string.IsNullOrEmpty(tenantId))
+            {
+                LogContext.PushProperty("TenantId", tenantId);
+                diagnosticContext.Set("TenantId", tenantId);
+            }
+        };
+    });
     
     // Global error handling middleware will be added here in future tasks
     
