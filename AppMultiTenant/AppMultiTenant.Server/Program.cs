@@ -85,7 +85,21 @@ void ConfigureServices(IServiceCollection services, IConfiguration configuration
     // Persistence services - Entity Framework Core y repositorios
     services.AddPersistenceServices(configuration);
     
-    // Authentication services will be registered here in future tasks
+    // Identity services - ASP.NET Core Identity configurado para multi-inquilino
+    services.AddIdentityServices(configuration);
+    
+    // Configuración de autorización
+    services.AddAuthorization(options =>
+    {
+        // Política básica para requerir acceso a un inquilino específico
+        options.AddPolicy("RequireTenantAccess", policy =>
+        {
+            policy.RequireAuthenticatedUser();
+            // En una tarea futura, se añadirá un requisito personalizado para verificar TenantId
+        });
+
+        // Más políticas se agregarán en tareas futuras según los requisitos
+    });
 }
 
 // Method to configure the HTTP request pipeline
@@ -103,7 +117,7 @@ void ConfigureMiddleware(WebApplication app, IWebHostEnvironment env)
     
     // Global error handling middleware will be added here in future tasks
     
-    // Tenant resolution middleware will be added here in future tasks
+    // Tenant resolution middleware
     app.UseTenantResolution();
     
     app.UseHttpsRedirection();
