@@ -91,7 +91,8 @@ void ConfigureServices(IServiceCollection services, IConfiguration configuration
     services.Configure<JwtSettings>(
         configuration.GetSection("JwtSettings"));
     
-    // Domain and Application layer services will be registered here in future tasks
+    // Domain and Application layer services
+    services.AddApplicationServices();
     
     // Infrastructure layer services
     // HttpContextAccessor - necesario para el TenantResolverService
