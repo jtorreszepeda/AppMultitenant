@@ -230,8 +230,11 @@ Cliente ──▶ TenantSectionDefinitionsController ──▶ TenantSectionDefi
              (Server)                              (Application)                      (Infrastructure)                    (con filtro TenantId)
 ```
 
-1. **`TenantSectionDefinitionsController`** (`AppMultiTenant.Server`, pendiente de implementar):
-   - Expone endpoints para definir estructuras de datos personalizadas.
+1. **`TenantSectionDefinitionsController`** (`AppMultiTenant.Server`):
+   - Expone endpoints CRUD para definir estructuras de datos personalizadas.
+   - Proporciona funcionalidades para crear, listar, buscar, actualizar y eliminar definiciones de sección.
+   - Implementa verificación de disponibilidad de nombres de secciones.
+   - Soporta la creación y asignación de permisos específicos para las secciones.
    - Llama a métodos de `ITenantSectionDefinitionService`.
 
 2. **`TenantSectionDefinitionService`** (`AppMultiTenant.Application`):
@@ -361,5 +364,6 @@ Según la lista de tareas, el proyecto se encuentra en la fase de desarrollo de 
   - SystemAdminTenantsController para gestión de inquilinos por el Super Administrador
   - TenantUsersController para gestión de usuarios dentro de un inquilino
   - TenantRolesController para gestión de roles y asignación de permisos dentro de un inquilino
+  - TenantSectionDefinitionsController para gestión de definiciones de secciones por el Administrador de Inquilino
 
-Las próximas fases incluyen completar la implementación de los controladores de la API restantes (secciones) y el desarrollo del cliente Blazor WebAssembly.
+Las próximas fases incluyen completar la implementación de los controladores de la API restantes (datos de sección) y el desarrollo del cliente Blazor WebAssembly.
