@@ -1,9 +1,5 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Threading.Tasks;
 using AppMultiTenant.Application.Interfaces.Services;
-using AppMultiTenant.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AppMultiTenant.Server.Controllers
@@ -474,12 +470,12 @@ namespace AppMultiTenant.Server.Controllers
             try
             {
                 bool success = await _userService.RemoveRolesFromUserAsync(id, model.RoleIds);
-                
+
                 if (!success)
                 {
                     return NotFound(new { message = $"No se encontró ningún usuario con el ID {id} o no se pudieron remover los roles." });
                 }
-                
+
                 return Ok(new { message = "Roles removidos correctamente del usuario." });
             }
             catch (Exception ex)
@@ -597,4 +593,4 @@ namespace AppMultiTenant.Server.Controllers
         [Required(ErrorMessage = "Se requiere al menos un rol para remover.")]
         public IEnumerable<Guid> RoleIds { get; set; }
     }
-} 
+}

@@ -204,8 +204,14 @@ Cliente ──▶ TenantRolesController ──▶ TenantRoleService ──▶ Ro
              (Server)                 (Application)         (Infrastructure)                          (con filtro TenantId)
 ```
 
-1. **`TenantRolesController`** (`AppMultiTenant.Server`, pendiente de implementar):
-   - Expone endpoints para CRUD de roles y asignación de permisos.
+1. **`TenantRolesController`** (`AppMultiTenant.Server`):
+   - Expone endpoints para CRUD de roles y asignación de permisos dentro de un inquilino.
+   - Proporciona funcionalidades para listar, crear, actualizar y eliminar roles.
+   - Permite gestionar datos de roles como nombre y descripción.
+   - Implementa verificación de disponibilidad de nombres de roles.
+   - Permite obtener todos los permisos disponibles en el sistema.
+   - Soporta la asignación y eliminación de permisos a roles.
+   - Obtiene el `TenantId` automáticamente del contexto HTTP.
    - Llama a métodos de `ITenantRoleService`.
 
 2. **`TenantRoleService`** (`AppMultiTenant.Application`):
@@ -354,5 +360,6 @@ Según la lista de tareas, el proyecto se encuentra en la fase de desarrollo de 
   - AuthController para autenticación
   - SystemAdminTenantsController para gestión de inquilinos por el Super Administrador
   - TenantUsersController para gestión de usuarios dentro de un inquilino
+  - TenantRolesController para gestión de roles y asignación de permisos dentro de un inquilino
 
-Las próximas fases incluyen completar la implementación de los controladores de la API restantes (roles, permisos, secciones) y el desarrollo del cliente Blazor WebAssembly.
+Las próximas fases incluyen completar la implementación de los controladores de la API restantes (secciones) y el desarrollo del cliente Blazor WebAssembly.
