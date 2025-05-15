@@ -245,8 +245,10 @@ Cliente ──▶ SystemAdminTenantsController ──▶ SystemAdminTenantServic
              (Server)                         (Application)                (Infrastructure)
 ```
 
-1. **`SystemAdminTenantsController`** (`AppMultiTenant.Server`, pendiente de implementar):
-   - Expone endpoints para la gestión de inquilinos.
+1. **`SystemAdminTenantsController`** (`AppMultiTenant.Server`):
+   - Expone endpoints CRUD para la gestión de inquilinos.
+   - Incluye funcionalidades para crear, listar, buscar, actualizar, activar/desactivar y eliminar inquilinos.
+   - Proporciona soporte para crear automáticamente un administrador inicial al crear un inquilino.
    - Llama a métodos de `ISystemAdminTenantService`.
 
 2. **`SystemAdminTenantService`** (`AppMultiTenant.Application`):
