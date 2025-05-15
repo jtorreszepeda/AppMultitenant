@@ -72,31 +72,23 @@ namespace AppMultiTenant.Server.Controllers
                 return BadRequest(ModelState);
             }
 
-            try
-            {
-                var (user, token) = await _authService.RegisterUserAsync(
-                    model.UserName,
-                    model.Email,
-                    model.Password,
-                    model.FullName);
+            var (user, token) = await _authService.RegisterUserAsync(
+                model.UserName,
+                model.Email,
+                model.Password,
+                model.FullName);
 
-                return Ok(new
-                {
-                    token,
-                    user = new
-                    {
-                        id = user.Id,
-                        userName = user.UserName,
-                        email = user.Email,
-                        fullName = user.FullName
-                    }
-                });
-            }
-            catch (Exception ex)
+            return Ok(new
             {
-                // Considera manejar excepciones específicas (ej. duplicado de usuario)
-                return BadRequest(new { message = ex.Message });
-            }
+                token,
+                user = new
+                {
+                    id = user.Id,
+                    userName = user.UserName,
+                    email = user.Email,
+                    fullName = user.FullName
+                }
+            });
         }
 
         /// <summary>
@@ -130,25 +122,18 @@ namespace AppMultiTenant.Server.Controllers
         [HttpPost("logout")]
         public async Task<IActionResult> Logout()
         {
-            try
+            // Obtener el ID del usuario del token JWT
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier) ?? User.FindFirst("sub");
+            
+            if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
             {
-                // Obtener el ID del usuario del token JWT
-                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier) ?? User.FindFirst("sub");
-                
-                if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
-                {
-                    return BadRequest(new { message = "No se pudo identificar al usuario" });
-                }
+                return BadRequest(new { message = "No se pudo identificar al usuario" });
+            }
 
-                // Llamar al servicio para invalidar tokens
-                await _authService.LogoutAsync(userId);
-                
-                return Ok(new { message = "Sesión cerrada correctamente" });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
+            // Llamar al servicio para invalidar tokens
+            await _authService.LogoutAsync(userId);
+            
+            return Ok(new { message = "Sesión cerrada correctamente" });
         }
     }
 

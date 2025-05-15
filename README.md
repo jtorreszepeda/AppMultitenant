@@ -115,6 +115,7 @@ La aplicación sigue una arquitectura limpia con separación clara de responsabi
 
 ### 4. **`AppMultiTenant.Server`** - API Web
 - **`TenantResolutionMiddleware`**: Middleware que resuelve el inquilino para cada solicitud.
+- **`GlobalExceptionHandlingMiddleware`**: Middleware que captura todas las excepciones no controladas y las transforma en respuestas HTTP estructuradas y consistentes.
 - **`Program.cs`**: Configuración de la aplicación, servicios y middleware.
 - **`Controllers/`**: Controladores REST que expondrán los servicios de la aplicación (pendientes de implementar).
 
@@ -156,7 +157,7 @@ Cliente ──▶ AuthController ──▶ AuthService ──▶ Identity ──
              (Server)          (Application)   (Infrastructure)
 
 Solicitud ──▶ JWT ──▶ TenantResolutionMiddleware ──▶ Controllers ──┐
-Autenticada                                                        │
+Autenticada           GlobalExceptionHandlingMiddleware            │
                                                                    ▼
                       ◀── Resultado ◀── TenantAuthorizationHandler ◀──┐
                       │                 PermissionAuthorizationHandler │
@@ -394,5 +395,10 @@ Según la lista de tareas, el proyecto se encuentra en la fase de desarrollo de 
   - Implementación de TenantAuthorizationHandler y PermissionAuthorizationHandler
   - Aplicación de políticas a los endpoints de la API
   - Verificación de pertenencia al inquilino correcto y posesión de permisos necesarios
+- Implementación de un middleware global de manejo de errores:
+  - Captura centralizada de excepciones no controladas
+  - Transformación de excepciones en respuestas HTTP estructuradas
+  - Integración con el sistema de logging
+  - Soporte para excepciones de dominio personalizadas
 
-Las próximas fases incluyen implementar un middleware global de manejo de errores, validación de modelos en los controladores, y el desarrollo del cliente Blazor WebAssembly.
+Las próximas fases incluyen implementar validación de modelos en los controladores, y el desarrollo del cliente Blazor WebAssembly.

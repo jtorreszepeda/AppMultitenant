@@ -188,7 +188,8 @@ void ConfigureMiddleware(WebApplication app, IWebHostEnvironment env)
         };
     });
     
-    // Global error handling middleware will be added here in future tasks
+    // Global error handling middleware
+    app.UseGlobalExceptionHandling();
     
     // Tenant resolution middleware
     app.UseTenantResolution();
