@@ -157,7 +157,7 @@ Cliente ──▶ AuthController ──▶ AuthService ──▶ Identity ──
 ```
 
 1. El usuario envía credenciales a través del cliente.
-2. **`AuthController`** (`AppMultiTenant.Server`, pendiente de implementar):
+2. **`AuthController`** (`AppMultiTenant.Server`):
    - Recibe las credenciales del usuario.
    - Llama a `IAuthService.LoginAsync()`.
 
@@ -345,5 +345,6 @@ Según la lista de tareas, el proyecto se encuentra en la fase de desarrollo de 
 - Las interfaces e implementaciones de servicios de aplicación
 - La configuración de la infraestructura y base de datos con soporte multi-inquilino
 - La implementación de la resolución de inquilinos
+- La implementación inicial de controladores API (AuthController para autenticación)
 
-Las próximas fases incluyen la implementación de los controladores de la API y el desarrollo del cliente Blazor WebAssembly.
+Las próximas fases incluyen completar la implementación de los controladores de la API restantes y el desarrollo del cliente Blazor WebAssembly.
