@@ -61,6 +61,12 @@ namespace AppMultiTenant.Infrastructure.Identity
                 options.TokenLifespan = TimeSpan.FromHours(3);
             });
 
+            // Personalizar UserManager para asegurar que use nuestro store multi-tenant
+            services.AddScoped<UserManager<ApplicationUser>, UserManager<ApplicationUser>>();
+
+            // Personalizar RoleManager para asegurar que use nuestro store multi-tenant
+            services.AddScoped<RoleManager<ApplicationRole>, RoleManager<ApplicationRole>>();
+
             return services;
         }
     }

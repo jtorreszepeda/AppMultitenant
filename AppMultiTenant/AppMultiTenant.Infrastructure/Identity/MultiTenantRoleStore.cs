@@ -8,6 +8,7 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace AppMultiTenant.Infrastructure.Identity
 {
@@ -93,6 +94,24 @@ namespace AppMultiTenant.Infrastructure.Identity
             return Roles.FirstOrDefaultAsync(r => 
                 r.NormalizedName == normalizedRoleName && r.TenantId == _currentTenantId, 
                 cancellationToken);
+        }
+        
+        /// <summary>
+        /// Sobrescribe el método para obtener los roles y filtra por TenantId
+        /// </summary>
+        public async Task<IList<ApplicationRole>> GetRolesAsync(CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            ThrowIfDisposed();
+            
+            // Si no hay un inquilino en el contexto, devolvemos todos los roles (modo SuperAdmin)
+            if (!_currentTenantId.HasValue)
+            {
+                return await Roles.ToListAsync(cancellationToken);
+            }
+            
+            // En modo tenant, filtramos por TenantId
+            return await Roles.Where(r => r.TenantId == _currentTenantId).ToListAsync(cancellationToken);
         }
     }
 } 

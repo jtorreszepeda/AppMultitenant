@@ -8,6 +8,7 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace AppMultiTenant.Infrastructure.Identity
 {
@@ -113,6 +114,29 @@ namespace AppMultiTenant.Infrastructure.Identity
             return Users.FirstOrDefaultAsync(u => 
                 u.NormalizedEmail == normalizedEmail && u.TenantId == _currentTenantId, 
                 cancellationToken);
+        }
+
+        /// <summary>
+        /// Sobrescribe el método para obtener usuarios en un rol y filtra por TenantId
+        /// </summary>
+        public override async Task<IList<ApplicationUser>> GetUsersInRoleAsync(string normalizedRoleName, CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            ThrowIfDisposed();
+
+            var query = from userRole in Context.UserRoles
+                       join user in Users on userRole.UserId equals user.Id
+                       join role in Context.Roles on userRole.RoleId equals role.Id
+                       where role.NormalizedName == normalizedRoleName
+                       select user;
+
+            // Si hay un inquilino en el contexto, filtramos usuarios por TenantId
+            if (_currentTenantId.HasValue)
+            {
+                query = query.Where(user => user.TenantId == _currentTenantId);
+            }
+
+            return await query.ToListAsync(cancellationToken);
         }
     }
 } 
