@@ -407,5 +407,11 @@ Según la lista de tareas, el proyecto se encuentra en la fase de desarrollo de 
   - Configuraciones de seguridad para evitar vulnerabilidades
   - Gestión de referencias circulares y otras consideraciones
   - Documentación detallada de riesgos y mitigaciones
+- Implementación de validación de modelos en los controladores:
+  - Filtro de acción global (ModelValidationFilter) que utiliza FluentValidation
+  - Validación automática y consistente de todos los modelos recibidos en los controladores
+  - Integración con IValidationService para reglas de negocio complejas
+  - Documentación detallada del enfoque de validación en capas
+  - Simplificación del código de los controladores eliminando validaciones manuales repetitivas
 
-Las próximas fases incluyen implementar validación de modelos en los controladores, y el desarrollo del cliente Blazor WebAssembly.
+La próxima fase incluye el desarrollo del cliente Blazor WebAssembly.

@@ -1,7 +1,7 @@
+using System.Security.Claims;
 using AppMultiTenant.Application.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace AppMultiTenant.Server.Controllers
 {
@@ -34,11 +34,7 @@ namespace AppMultiTenant.Server.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest model)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
+            // ModelState.IsValid ya es verificado por el filtro global ModelValidationFilter
             var (token, user) = await _authService.LoginAsync(model.Email, model.Password);
 
             if (token == null || user == null)
@@ -67,11 +63,7 @@ namespace AppMultiTenant.Server.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterRequest model)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
+            // ModelState.IsValid ya es verificado por el filtro global ModelValidationFilter
             var (user, token) = await _authService.RegisterUserAsync(
                 model.UserName,
                 model.Email,
@@ -124,7 +116,7 @@ namespace AppMultiTenant.Server.Controllers
         {
             // Obtener el ID del usuario del token JWT
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier) ?? User.FindFirst("sub");
-            
+
             if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
             {
                 return BadRequest(new { message = "No se pudo identificar al usuario" });
@@ -132,7 +124,7 @@ namespace AppMultiTenant.Server.Controllers
 
             // Llamar al servicio para invalidar tokens
             await _authService.LogoutAsync(userId);
-            
+
             return Ok(new { message = "Sesión cerrada correctamente" });
         }
     }

@@ -69,8 +69,11 @@ finally
 // Method to configure all services
 void ConfigureServices(IServiceCollection services, IConfiguration configuration)
 {
-    // Controllers
+    // Controllers con validación de modelos
     services.AddControllers();
+    
+    // Configuración de validación de modelos automática
+    services.AddModelValidation();
     
     // API Documentation
     services.AddOpenApi();
