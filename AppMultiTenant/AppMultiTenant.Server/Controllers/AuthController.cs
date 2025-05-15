@@ -1,5 +1,7 @@
 using AppMultiTenant.Application.Interfaces.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace AppMultiTenant.Server.Controllers
 {
@@ -98,15 +100,55 @@ namespace AppMultiTenant.Server.Controllers
         }
 
         /// <summary>
+        /// Refresca un token JWT expirado o próximo a expirar
+        /// </summary>
+        /// <param name="request">Token JWT actual a refrescar</param>
+        /// <returns>Nuevo token JWT válido</returns>
+        [HttpPost("refresh-token")]
+        public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequest request)
+        {
+            if (string.IsNullOrEmpty(request.Token))
+            {
+                return BadRequest(new { message = "El token es requerido" });
+            }
+
+            var newToken = await _authService.RefreshTokenAsync(request.Token);
+
+            if (newToken == null)
+            {
+                return Unauthorized(new { message = "El token no es válido o ha expirado permanentemente" });
+            }
+
+            return Ok(new { token = newToken });
+        }
+
+        /// <summary>
         /// Cierra la sesión de un usuario
         /// </summary>
         /// <returns>Confirmación de cierre de sesión</returns>
+        [Authorize]
         [HttpPost("logout")]
         public async Task<IActionResult> Logout()
         {
-            // Obtener el ID del usuario del token JWT (se implementará en una tarea futura)
-            // Por ahora, simplemente devolvemos una confirmación
-            return Ok(new { message = "Sesión cerrada correctamente" });
+            try
+            {
+                // Obtener el ID del usuario del token JWT
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier) ?? User.FindFirst("sub");
+                
+                if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+                {
+                    return BadRequest(new { message = "No se pudo identificar al usuario" });
+                }
+
+                // Llamar al servicio para invalidar tokens
+                await _authService.LogoutAsync(userId);
+                
+                return Ok(new { message = "Sesión cerrada correctamente" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
     }
 
@@ -159,5 +201,17 @@ namespace AppMultiTenant.Server.Controllers
         /// </summary>
         [System.ComponentModel.DataAnnotations.Required]
         public string FullName { get; set; } = string.Empty;
+    }
+
+    /// <summary>
+    /// Modelo para la solicitud de refresco de token
+    /// </summary>
+    public class RefreshTokenRequest
+    {
+        /// <summary>
+        /// Token JWT actual a refrescar
+        /// </summary>
+        [System.ComponentModel.DataAnnotations.Required]
+        public string Token { get; set; } = string.Empty;
     }
 }
