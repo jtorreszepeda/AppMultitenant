@@ -179,9 +179,12 @@ Cliente ──▶ TenantUsersController ──▶ TenantUserService ──▶ Us
              (Server)                 (Application)         (Infrastructure)    (con filtro TenantId)
 ```
 
-1. **`TenantUsersController`** (`AppMultiTenant.Server`, pendiente de implementar):
-   - Expone endpoints para CRUD de usuarios.
-   - Obtiene el `TenantId` del contexto HTTP.
+1. **`TenantUsersController`** (`AppMultiTenant.Server`):
+   - Expone endpoints para CRUD de usuarios dentro de un inquilino.
+   - Proporciona funcionalidades para listar, crear, actualizar y eliminar usuarios.
+   - Permite gestionar datos de usuario como nombre, email, estado activo/inactivo.
+   - Soporta la asignación y eliminación de roles a usuarios.
+   - Obtiene el `TenantId` automáticamente del contexto HTTP.
    - Llama a métodos de `ITenantUserService`.
 
 2. **`TenantUserService`** (`AppMultiTenant.Application`):
@@ -347,6 +350,9 @@ Según la lista de tareas, el proyecto se encuentra en la fase de desarrollo de 
 - Las interfaces e implementaciones de servicios de aplicación
 - La configuración de la infraestructura y base de datos con soporte multi-inquilino
 - La implementación de la resolución de inquilinos
-- La implementación inicial de controladores API (AuthController para autenticación)
+- La implementación de controladores API:
+  - AuthController para autenticación
+  - SystemAdminTenantsController para gestión de inquilinos por el Super Administrador
+  - TenantUsersController para gestión de usuarios dentro de un inquilino
 
-Las próximas fases incluyen completar la implementación de los controladores de la API restantes y el desarrollo del cliente Blazor WebAssembly.
+Las próximas fases incluyen completar la implementación de los controladores de la API restantes (roles, permisos, secciones) y el desarrollo del cliente Blazor WebAssembly.
