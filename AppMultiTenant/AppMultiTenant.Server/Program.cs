@@ -88,6 +88,9 @@ void ConfigureServices(IServiceCollection services, IConfiguration configuration
     // Identity services - ASP.NET Core Identity configurado para multi-inquilino
     services.AddIdentityServices(configuration);
     
+    // JWT Authentication services
+    services.AddJwtAuthentication(configuration);
+    
     // Configuración de autorización
     services.AddAuthorization(options =>
     {

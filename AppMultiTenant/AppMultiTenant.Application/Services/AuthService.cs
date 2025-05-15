@@ -24,6 +24,7 @@ namespace AppMultiTenant.Application.Services
         private readonly IUserRepository _userRepository;
         private readonly IPermissionRepository _permissionRepository;
         private readonly IRoleRepository _roleRepository;
+        private readonly ITenantRepository _tenantRepository;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly JwtSettings _jwtSettings;
         private readonly IUnitOfWork _unitOfWork;
@@ -36,6 +37,7 @@ namespace AppMultiTenant.Application.Services
         /// <param name="userRepository">Repositorio de usuarios</param>
         /// <param name="permissionRepository">Repositorio de permisos</param>
         /// <param name="roleRepository">Repositorio de roles</param>
+        /// <param name="tenantRepository">Repositorio de inquilinos</param>
         /// <param name="userManager">Gestor de usuarios de Identity</param>
         /// <param name="jwtSettings">Configuración de tokens JWT</param>
         /// <param name="unitOfWork">Unit of Work para transacciones</param>
@@ -45,6 +47,7 @@ namespace AppMultiTenant.Application.Services
             IUserRepository userRepository,
             IPermissionRepository permissionRepository,
             IRoleRepository roleRepository,
+            ITenantRepository tenantRepository,
             UserManager<ApplicationUser> userManager,
             IOptions<JwtSettings> jwtSettings,
             IUnitOfWork unitOfWork,
@@ -54,6 +57,7 @@ namespace AppMultiTenant.Application.Services
             _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
             _permissionRepository = permissionRepository ?? throw new ArgumentNullException(nameof(permissionRepository));
             _roleRepository = roleRepository ?? throw new ArgumentNullException(nameof(roleRepository));
+            _tenantRepository = tenantRepository ?? throw new ArgumentNullException(nameof(tenantRepository));
             _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
             _jwtSettings = jwtSettings?.Value ?? throw new ArgumentNullException(nameof(jwtSettings));
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
@@ -207,7 +211,7 @@ namespace AppMultiTenant.Application.Services
 
             // Extraer userId y tenantId del token
             var userIdClaim = principal.FindFirst(JwtRegisteredClaimNames.Sub);
-            var tenantIdClaim = principal.FindFirst("tenantId");
+            var tenantIdClaim = principal.FindFirst("tenantId") ?? principal.FindFirst("tenant_id");
             
             if (userIdClaim == null || tenantIdClaim == null)
                 return null;
@@ -298,9 +302,17 @@ namespace AppMultiTenant.Application.Services
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new Claim("tenantId", user.TenantId.ToString()),
+                new Claim("tenant_id", user.TenantId.ToString()),
                 new Claim("userName", user.UserName),
                 new Claim("fullName", user.FullName ?? string.Empty)
             };
+
+            // Obtener información del tenant para incluir el identificador
+            var tenant = await _tenantRepository.GetByIdAsync(user.TenantId);
+            if (tenant != null && !string.IsNullOrEmpty(tenant.Identifier))
+            {
+                claims.Add(new Claim("tenant_identifier", tenant.Identifier));
+            }
 
             // Agregar roles como claims
             foreach (var role in roleNames)
