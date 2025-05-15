@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using AppMultiTenant.Application.Interfaces.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace AppMultiTenant.Server.Controllers
 {
@@ -9,7 +10,7 @@ namespace AppMultiTenant.Server.Controllers
     /// </summary>
     [ApiController]
     [Route("api/[controller]")]
-    // TODO: Agregar autorización específica para Administrador de Inquilino cuando se implemente
+    [Authorize(Policy = "RequireTenantAccess")]
     public class TenantUsersController : ControllerBase
     {
         private readonly ITenantUserService _userService;
@@ -36,6 +37,7 @@ namespace AppMultiTenant.Server.Controllers
         /// <param name="pageSize">Tamaño de página</param>
         /// <returns>Lista paginada de usuarios</returns>
         [HttpGet]
+        [Authorize(Policy = "ViewUsers")]
         public async Task<IActionResult> GetAllUsers(
             [FromQuery] bool includeInactive = false,
             [FromQuery] int pageNumber = 1,
@@ -64,6 +66,7 @@ namespace AppMultiTenant.Server.Controllers
         /// <param name="id">ID del usuario</param>
         /// <returns>Información del usuario solicitado</returns>
         [HttpGet("{id}")]
+        [Authorize(Policy = "ViewUsers")]
         public async Task<IActionResult> GetUserById(Guid id)
         {
             if (id == Guid.Empty)
@@ -87,6 +90,7 @@ namespace AppMultiTenant.Server.Controllers
         /// <param name="email">Email del usuario</param>
         /// <returns>Información del usuario solicitado</returns>
         [HttpGet("by-email")]
+        [Authorize(Policy = "ViewUsers")]
         public async Task<IActionResult> GetUserByEmail([FromQuery] string email)
         {
             if (string.IsNullOrWhiteSpace(email))
@@ -111,6 +115,7 @@ namespace AppMultiTenant.Server.Controllers
         /// <param name="excludeUserId">ID de usuario a excluir de la verificación (opcional)</param>
         /// <returns>True si está disponible, False si ya existe</returns>
         [HttpGet("check-email")]
+        [Authorize(Policy = "ViewUsers")]
         public async Task<IActionResult> CheckEmailAvailability(
             [FromQuery] string email,
             [FromQuery] Guid? excludeUserId = null)
@@ -131,6 +136,7 @@ namespace AppMultiTenant.Server.Controllers
         /// <param name="model">Datos del nuevo usuario</param>
         /// <returns>Usuario creado</returns>
         [HttpPost]
+        [Authorize(Policy = "CreateUser")]
         public async Task<IActionResult> CreateUser([FromBody] CreateUserRequest model)
         {
             if (!ModelState.IsValid)
@@ -161,6 +167,7 @@ namespace AppMultiTenant.Server.Controllers
         /// <param name="model">Datos actualizados</param>
         /// <returns>Usuario actualizado</returns>
         [HttpPut("{id}/fullname")]
+        [Authorize(Policy = "EditUser")]
         public async Task<IActionResult> UpdateUserFullName(Guid id, [FromBody] UpdateUserFullNameRequest model)
         {
             if (id == Guid.Empty)
@@ -197,6 +204,7 @@ namespace AppMultiTenant.Server.Controllers
         /// <param name="model">Datos actualizados</param>
         /// <returns>Usuario actualizado</returns>
         [HttpPut("{id}/email")]
+        [Authorize(Policy = "EditUser")]
         public async Task<IActionResult> UpdateUserEmail(Guid id, [FromBody] UpdateUserEmailRequest model)
         {
             if (id == Guid.Empty)
@@ -233,6 +241,7 @@ namespace AppMultiTenant.Server.Controllers
         /// <param name="model">Datos actualizados</param>
         /// <returns>Usuario actualizado</returns>
         [HttpPut("{id}/username")]
+        [Authorize(Policy = "EditUser")]
         public async Task<IActionResult> UpdateUserName(Guid id, [FromBody] UpdateUserNameRequest model)
         {
             if (id == Guid.Empty)
@@ -269,6 +278,7 @@ namespace AppMultiTenant.Server.Controllers
         /// <param name="model">Nueva contraseña</param>
         /// <returns>Confirmación del cambio</returns>
         [HttpPut("{id}/reset-password")]
+        [Authorize(Policy = "EditUser")]
         public async Task<IActionResult> ResetUserPassword(Guid id, [FromBody] ResetUserPasswordRequest model)
         {
             if (id == Guid.Empty)
@@ -304,6 +314,7 @@ namespace AppMultiTenant.Server.Controllers
         /// <param name="id">ID del usuario</param>
         /// <returns>Usuario actualizado</returns>
         [HttpPut("{id}/activate")]
+        [Authorize(Policy = "EditUser")]
         public async Task<IActionResult> ActivateUser(Guid id)
         {
             if (id == Guid.Empty)
@@ -334,6 +345,7 @@ namespace AppMultiTenant.Server.Controllers
         /// <param name="id">ID del usuario</param>
         /// <returns>Usuario actualizado</returns>
         [HttpPut("{id}/deactivate")]
+        [Authorize(Policy = "EditUser")]
         public async Task<IActionResult> DeactivateUser(Guid id)
         {
             if (id == Guid.Empty)
@@ -365,6 +377,7 @@ namespace AppMultiTenant.Server.Controllers
         /// <param name="currentUserId">ID del usuario que realiza la operación</param>
         /// <returns>Confirmación de eliminación</returns>
         [HttpDelete("{id}")]
+        [Authorize(Policy = "DeleteUser")]
         public async Task<IActionResult> DeleteUser(Guid id, [FromQuery] Guid currentUserId)
         {
             if (id == Guid.Empty)
@@ -400,6 +413,7 @@ namespace AppMultiTenant.Server.Controllers
         /// <param name="id">ID del usuario</param>
         /// <returns>Lista de roles asignados</returns>
         [HttpGet("{id}/roles")]
+        [Authorize(Policy = "ViewRoles")]
         public async Task<IActionResult> GetUserRoles(Guid id)
         {
             if (id == Guid.Empty)
@@ -425,6 +439,7 @@ namespace AppMultiTenant.Server.Controllers
         /// <param name="model">Lista de IDs de roles a asignar</param>
         /// <returns>Lista de roles asignados</returns>
         [HttpPost("{id}/roles")]
+        [Authorize(Policy = "AssignRoles")]
         public async Task<IActionResult> AssignRolesToUser(Guid id, [FromBody] AssignRolesToUserRequest model)
         {
             if (id == Guid.Empty)
@@ -455,6 +470,7 @@ namespace AppMultiTenant.Server.Controllers
         /// <param name="model">Lista de IDs de roles a remover</param>
         /// <returns>Confirmación de la operación</returns>
         [HttpDelete("{id}/roles")]
+        [Authorize(Policy = "AssignRoles")]
         public async Task<IActionResult> RemoveRolesFromUser(Guid id, [FromBody] RemoveRolesFromUserRequest model)
         {
             if (id == Guid.Empty)

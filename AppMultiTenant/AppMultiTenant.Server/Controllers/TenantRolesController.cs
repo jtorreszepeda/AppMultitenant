@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using AppMultiTenant.Application.Interfaces.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace AppMultiTenant.Server.Controllers
 {
@@ -9,7 +10,7 @@ namespace AppMultiTenant.Server.Controllers
     /// </summary>
     [ApiController]
     [Route("api/[controller]")]
-    // TODO: Agregar autorización específica para Administrador de Inquilino cuando se implemente
+    [Authorize(Policy = "RequireTenantAccess")]
     public class TenantRolesController : ControllerBase
     {
         private readonly ITenantRoleService _roleService;
@@ -33,6 +34,7 @@ namespace AppMultiTenant.Server.Controllers
         /// </summary>
         /// <returns>Lista de roles</returns>
         [HttpGet]
+        [Authorize(Policy = "ViewRoles")]
         public async Task<IActionResult> GetAllRoles()
         {
             var roles = await _roleService.GetAllRolesAsync();
@@ -45,6 +47,7 @@ namespace AppMultiTenant.Server.Controllers
         /// <param name="id">ID del rol</param>
         /// <returns>Información del rol solicitado</returns>
         [HttpGet("{id}")]
+        [Authorize(Policy = "ViewRoles")]
         public async Task<IActionResult> GetRoleById(Guid id)
         {
             if (id == Guid.Empty)
@@ -68,6 +71,7 @@ namespace AppMultiTenant.Server.Controllers
         /// <param name="name">Nombre del rol</param>
         /// <returns>Información del rol solicitado</returns>
         [HttpGet("by-name")]
+        [Authorize(Policy = "ViewRoles")]
         public async Task<IActionResult> GetRoleByName([FromQuery] string name)
         {
             if (string.IsNullOrWhiteSpace(name))
@@ -92,6 +96,7 @@ namespace AppMultiTenant.Server.Controllers
         /// <param name="excludeRoleId">ID de rol a excluir de la verificación (opcional)</param>
         /// <returns>True si está disponible, False si ya existe</returns>
         [HttpGet("check-name")]
+        [Authorize(Policy = "ViewRoles")]
         public async Task<IActionResult> CheckRoleNameAvailability(
             [FromQuery] string name,
             [FromQuery] Guid? excludeRoleId = null)
@@ -112,6 +117,7 @@ namespace AppMultiTenant.Server.Controllers
         /// <param name="model">Datos del nuevo rol</param>
         /// <returns>Rol creado</returns>
         [HttpPost]
+        [Authorize(Policy = "CreateRole")]
         public async Task<IActionResult> CreateRole([FromBody] CreateRoleRequest model)
         {
             if (!ModelState.IsValid)
@@ -140,6 +146,7 @@ namespace AppMultiTenant.Server.Controllers
         /// <param name="model">Datos actualizados</param>
         /// <returns>Rol actualizado</returns>
         [HttpPut("{id}/name")]
+        [Authorize(Policy = "EditRole")]
         public async Task<IActionResult> UpdateRoleName(Guid id, [FromBody] UpdateRoleNameRequest model)
         {
             if (id == Guid.Empty)
@@ -176,6 +183,7 @@ namespace AppMultiTenant.Server.Controllers
         /// <param name="model">Datos actualizados</param>
         /// <returns>Rol actualizado</returns>
         [HttpPut("{id}/description")]
+        [Authorize(Policy = "EditRole")]
         public async Task<IActionResult> UpdateRoleDescription(Guid id, [FromBody] UpdateRoleDescriptionRequest model)
         {
             if (id == Guid.Empty)
@@ -209,8 +217,9 @@ namespace AppMultiTenant.Server.Controllers
         /// Elimina un rol existente
         /// </summary>
         /// <param name="id">ID del rol a eliminar</param>
-        /// <returns>Resultado de la operación</returns>
+        /// <returns>Confirmación de eliminación</returns>
         [HttpDelete("{id}")]
+        [Authorize(Policy = "DeleteRole")]
         public async Task<IActionResult> DeleteRole(Guid id)
         {
             if (id == Guid.Empty)
@@ -238,8 +247,9 @@ namespace AppMultiTenant.Server.Controllers
         /// <summary>
         /// Obtiene todos los permisos disponibles en el sistema
         /// </summary>
-        /// <returns>Lista de permisos del sistema</returns>
+        /// <returns>Lista de permisos</returns>
         [HttpGet("permissions")]
+        [Authorize(Policy = "ViewRoles")]
         public async Task<IActionResult> GetAllPermissions()
         {
             var permissions = await _roleService.GetAllPermissionsAsync();
@@ -247,11 +257,12 @@ namespace AppMultiTenant.Server.Controllers
         }
 
         /// <summary>
-        /// Obtiene los permisos asignados a un rol específico
+        /// Obtiene los permisos asignados a un rol
         /// </summary>
         /// <param name="id">ID del rol</param>
-        /// <returns>Lista de permisos asignados al rol</returns>
+        /// <returns>Lista de permisos del rol</returns>
         [HttpGet("{id}/permissions")]
+        [Authorize(Policy = "ViewRoles")]
         public async Task<IActionResult> GetRolePermissions(Guid id)
         {
             if (id == Guid.Empty)
@@ -274,9 +285,10 @@ namespace AppMultiTenant.Server.Controllers
         /// Asigna permisos a un rol
         /// </summary>
         /// <param name="id">ID del rol</param>
-        /// <param name="model">Datos de los permisos a asignar</param>
-        /// <returns>Lista de permisos asignados</returns>
+        /// <param name="model">Permisos a asignar</param>
+        /// <returns>Lista actualizada de permisos del rol</returns>
         [HttpPost("{id}/permissions")]
+        [Authorize(Policy = "AssignPermissions")]
         public async Task<IActionResult> AssignPermissionsToRole(Guid id, [FromBody] AssignPermissionsRequest model)
         {
             if (id == Guid.Empty)
@@ -308,12 +320,13 @@ namespace AppMultiTenant.Server.Controllers
         }
 
         /// <summary>
-        /// Remueve permisos de un rol
+        /// Quita permisos de un rol
         /// </summary>
         /// <param name="id">ID del rol</param>
-        /// <param name="model">Datos de los permisos a remover</param>
-        /// <returns>Resultado de la operación</returns>
+        /// <param name="model">Permisos a quitar</param>
+        /// <returns>Lista actualizada de permisos del rol</returns>
         [HttpDelete("{id}/permissions")]
+        [Authorize(Policy = "AssignPermissions")]
         public async Task<IActionResult> RemovePermissionsFromRole(Guid id, [FromBody] RemovePermissionsRequest model)
         {
             if (id == Guid.Empty)

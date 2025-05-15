@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using AppMultiTenant.Server.Middleware;
 using AppMultiTenant.Infrastructure.Persistence.Configuration;
 using Serilog.Context;
+using Microsoft.AspNetCore.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -113,15 +114,45 @@ void ConfigureServices(IServiceCollection services, IConfiguration configuration
     // Configuración de autorización
     services.AddAuthorization(options =>
     {
-        // Política básica para requerir acceso a un inquilino específico
+        // Política para requerir acceso a un inquilino específico
         options.AddPolicy("RequireTenantAccess", policy =>
         {
             policy.RequireAuthenticatedUser();
-            // En una tarea futura, se añadirá un requisito personalizado para verificar TenantId
+            policy.AddRequirements(new TenantRequirement());
         });
 
-        // Más políticas se agregarán en tareas futuras según los requisitos
+        // Políticas para permisos de sistema
+        AddPermissionPolicy(options, "CreateUser", AppMultiTenant.Domain.Entities.Permission.SystemPermissions.CreateUser);
+        AddPermissionPolicy(options, "EditUser", AppMultiTenant.Domain.Entities.Permission.SystemPermissions.EditUser);
+        AddPermissionPolicy(options, "DeleteUser", AppMultiTenant.Domain.Entities.Permission.SystemPermissions.DeleteUser);
+        AddPermissionPolicy(options, "ViewUsers", AppMultiTenant.Domain.Entities.Permission.SystemPermissions.ViewUsers);
+        
+        AddPermissionPolicy(options, "CreateRole", AppMultiTenant.Domain.Entities.Permission.SystemPermissions.CreateRole);
+        AddPermissionPolicy(options, "EditRole", AppMultiTenant.Domain.Entities.Permission.SystemPermissions.EditRole);
+        AddPermissionPolicy(options, "DeleteRole", AppMultiTenant.Domain.Entities.Permission.SystemPermissions.DeleteRole);
+        AddPermissionPolicy(options, "ViewRoles", AppMultiTenant.Domain.Entities.Permission.SystemPermissions.ViewRoles);
+        
+        AddPermissionPolicy(options, "AssignRoles", AppMultiTenant.Domain.Entities.Permission.SystemPermissions.AssignRoles);
+        AddPermissionPolicy(options, "AssignPermissions", AppMultiTenant.Domain.Entities.Permission.SystemPermissions.AssignPermissions);
+        
+        AddPermissionPolicy(options, "DefineSections", AppMultiTenant.Domain.Entities.Permission.SystemPermissions.DefineSections);
+        AddPermissionPolicy(options, "ViewAllSections", AppMultiTenant.Domain.Entities.Permission.SystemPermissions.ViewAllSections);
     });
+    
+    // Método auxiliar para agregar políticas de permisos
+    void AddPermissionPolicy(AuthorizationOptions options, string policyName, string permission)
+    {
+        options.AddPolicy(policyName, policy =>
+        {
+            policy.RequireAuthenticatedUser();
+            policy.AddRequirements(new TenantRequirement());
+            policy.AddRequirements(new PermissionRequirement(permission));
+        });
+    }
+    
+    // Registro de los authorization handlers
+    services.AddScoped<IAuthorizationHandler, TenantAuthorizationHandler>();
+    services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
 }
 
 // Method to configure the HTTP request pipeline

@@ -154,7 +154,17 @@ Cliente Web ──▶ HTTP Request ──▶ TenantResolutionMiddleware ──�
 ```
 Cliente ──▶ AuthController ──▶ AuthService ──▶ Identity ──▶ JWT ──▶ Cliente almacena token
              (Server)          (Application)   (Infrastructure)
+
+Solicitud ──▶ JWT ──▶ TenantResolutionMiddleware ──▶ Controllers ──┐
+Autenticada                                                        │
+                                                                   ▼
+                      ◀── Resultado ◀── TenantAuthorizationHandler ◀──┐
+                      │                 PermissionAuthorizationHandler │
+                      │                                                │
+                      └────────────────────────────────────────────────┘
 ```
+
+#### Flujo de Autenticación:
 
 1. El usuario envía credenciales a través del cliente.
 2. **`AuthController`** (`AppMultiTenant.Server`):
@@ -163,7 +173,7 @@ Cliente ──▶ AuthController ──▶ AuthService ──▶ Identity ──
 
 3. **`AuthService`** (`AppMultiTenant.Application`):
    - Valida las credenciales contra Identity.
-   - Genera un token JWT con claims de usuario e inquilino.
+   - Genera un token JWT con claims de usuario, inquilino y permisos.
    - Devuelve el token y la información del usuario.
 
 4. **Identity** (`AppMultiTenant.Infrastructure`):
@@ -171,6 +181,21 @@ Cliente ──▶ AuthController ──▶ AuthService ──▶ Identity ──
    - `MultiTenantRoleStore`: Gestiona roles específicos por inquilino.
 
 5. El cliente almacena el token JWT para usarlo en solicitudes futuras.
+
+#### Flujo de Autorización:
+
+1. El cliente envía una solicitud con el token JWT.
+2. El middleware de autenticación valida el token y establece el contexto de usuario.
+3. **`TenantResolutionMiddleware`** resuelve y establece el `TenantId` en el contexto.
+4. Cuando la solicitud llega a un controlador con atributos `[Authorize]`:
+   - **`TenantAuthorizationHandler`**: Verifica que el `TenantId` del token coincida con el `TenantId` resuelto.
+   - **`PermissionAuthorizationHandler`**: Verifica que el usuario tenga los permisos necesarios.
+
+5. Los controladores aplican políticas de autorización específicas:
+   - **`RequireTenantAccess`**: Asegura que el usuario sólo acceda a datos de su inquilino.
+   - Políticas basadas en permisos: "CreateUser", "EditRole", "DeleteUser", etc.
+   
+6. Si alguna verificación falla, se devuelve un error 403 (Forbidden); de lo contrario, se procesa la solicitud.
 
 ### 3. Gestión de Usuarios (por Inquilino)
 
@@ -365,5 +390,9 @@ Según la lista de tareas, el proyecto se encuentra en la fase de desarrollo de 
   - TenantUsersController para gestión de usuarios dentro de un inquilino
   - TenantRolesController para gestión de roles y asignación de permisos dentro de un inquilino
   - TenantSectionDefinitionsController para gestión de definiciones de secciones por el Administrador de Inquilino
+- La configuración de políticas de autorización basadas en roles, permisos y TenantId:
+  - Implementación de TenantAuthorizationHandler y PermissionAuthorizationHandler
+  - Aplicación de políticas a los endpoints de la API
+  - Verificación de pertenencia al inquilino correcto y posesión de permisos necesarios
 
-Las próximas fases incluyen completar la implementación de los controladores de la API restantes (datos de sección) y el desarrollo del cliente Blazor WebAssembly.
+Las próximas fases incluyen implementar un middleware global de manejo de errores, validación de modelos en los controladores, y el desarrollo del cliente Blazor WebAssembly.

@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using AppMultiTenant.Application.Interfaces.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace AppMultiTenant.Server.Controllers
 {
@@ -9,7 +10,8 @@ namespace AppMultiTenant.Server.Controllers
     /// </summary>
     [ApiController]
     [Route("api/[controller]")]
-    // TODO: Agregar autorización específica para Administrador de Inquilino cuando se implemente
+    [Authorize(Policy = "RequireTenantAccess")]
+    [Authorize(Policy = "DefineSections")]
     public class TenantSectionDefinitionsController : ControllerBase
     {
         private readonly ITenantSectionDefinitionService _sectionDefinitionService;
@@ -260,12 +262,13 @@ namespace AppMultiTenant.Server.Controllers
         }
 
         /// <summary>
-        /// Crea y asigna permisos para una sección a un rol de administrador
+        /// Crea y asigna permisos para una sección a un rol específico
         /// </summary>
         /// <param name="id">ID de la definición de sección</param>
-        /// <param name="model">Datos del rol de administrador</param>
-        /// <returns>Lista de permisos creados y asignados</returns>
+        /// <param name="model">Datos del rol para asignar permisos</param>
+        /// <returns>Confirmación de la asignación de permisos</returns>
         [HttpPost("{id}/permissions")]
+        [Authorize(Policy = "AssignPermissions")]
         public async Task<IActionResult> CreateAndAssignSectionPermissions(Guid id, [FromBody] AssignSectionPermissionsRequest model)
         {
             if (id == Guid.Empty)
