@@ -1,6 +1,6 @@
-using Microsoft.Extensions.DependencyInjection;
 using AppMultiTenant.Application.Interfaces.Services;
 using AppMultiTenant.Application.Services;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace AppMultiTenant.Application.Configuration
 {
@@ -23,8 +23,11 @@ namespace AppMultiTenant.Application.Configuration
             services.AddScoped<ITenantRoleService, TenantRoleService>();
             services.AddScoped<ITenantSectionDefinitionService, TenantSectionDefinitionService>();
             services.AddScoped<IValidationService, ValidationService>();
-            
+
+            // Servicio de serialización para entidades de dominio
+            services.AddSingleton<IEntitySerializationService, EntitySerializationService>();
+
             return services;
         }
     }
-} 
+}

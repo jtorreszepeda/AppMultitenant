@@ -77,6 +77,7 @@ La aplicación sigue una arquitectura limpia con separación clara de responsabi
   - **`ITenantSectionDefinitionService`**: Gestiona definiciones de secciones personalizadas.
   - **`ISystemAdminTenantService`**: Administra inquilinos a nivel de sistema.
   - **`ITenantResolverService`**: Resuelve el inquilino actual.
+  - **`IEntitySerializationService`**: Maneja la serialización/deserialización segura de entidades de dominio directamente desde/hacia los controladores API.
 
 - **Interfaces de Persistencia**:
   - **`IRepositoryBase<T>`**: Operaciones CRUD básicas para entidades.
@@ -94,6 +95,7 @@ La aplicación sigue una arquitectura limpia con separación clara de responsabi
   - **`TenantSectionDefinitionService`**: Implementa `ITenantSectionDefinitionService`.
   - **`SystemAdminTenantService`**: Implementa `ISystemAdminTenantService`.
   - **`ValidationService`**: Validación de datos en los servicios.
+  - **`EntitySerializationService`**: Implementa la serialización/deserialización segura de entidades de dominio con configuraciones de seguridad.
 
 ### 3. **`AppMultiTenant.Infrastructure`** - Implementaciones Técnicas
 - **Persistencia**:
@@ -400,5 +402,10 @@ Según la lista de tareas, el proyecto se encuentra en la fase de desarrollo de 
   - Transformación de excepciones en respuestas HTTP estructuradas
   - Integración con el sistema de logging
   - Soporte para excepciones de dominio personalizadas
+- Implementación de un servicio de serialización para entidades de dominio:
+  - Servicio centralizado para manejar la serialización/deserialización segura
+  - Configuraciones de seguridad para evitar vulnerabilidades
+  - Gestión de referencias circulares y otras consideraciones
+  - Documentación detallada de riesgos y mitigaciones
 
 Las próximas fases incluyen implementar validación de modelos en los controladores, y el desarrollo del cliente Blazor WebAssembly.
