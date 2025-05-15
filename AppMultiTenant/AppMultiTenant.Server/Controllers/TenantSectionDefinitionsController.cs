@@ -121,27 +121,20 @@ namespace AppMultiTenant.Server.Controllers
                 return BadRequest(ModelState);
             }
 
-            try
-            {
-                var sectionDefinition = await _sectionDefinitionService.CreateSectionDefinitionAsync(
-                    model.Name,
-                    model.Description);
+            var sectionDefinition = await _sectionDefinitionService.CreateSectionDefinitionAsync(
+                model.Name,
+                model.Description);
 
-                // Si se especificó un rol de administrador, crear y asignar permisos para esta sección
-                if (model.AdminRoleId.HasValue && model.AdminRoleId != Guid.Empty)
-                {
-                    await _sectionDefinitionService.CreateAndAssignSectionPermissionsAsync(
-                        sectionDefinition.Id,
-                        sectionDefinition.Name,
-                        model.AdminRoleId.Value);
-                }
-
-                return CreatedAtAction(nameof(GetSectionDefinitionById), new { id = sectionDefinition.Id }, sectionDefinition);
-            }
-            catch (Exception ex)
+            // Si se especificó un rol de administrador, crear y asignar permisos para esta sección
+            if (model.AdminRoleId.HasValue && model.AdminRoleId != Guid.Empty)
             {
-                return BadRequest(new { message = ex.Message });
+                await _sectionDefinitionService.CreateAndAssignSectionPermissionsAsync(
+                    sectionDefinition.Id,
+                    sectionDefinition.Name,
+                    model.AdminRoleId.Value);
             }
+
+            return CreatedAtAction(nameof(GetSectionDefinitionById), new { id = sectionDefinition.Id }, sectionDefinition);
         }
 
         /// <summary>
@@ -163,21 +156,14 @@ namespace AppMultiTenant.Server.Controllers
                 return BadRequest(ModelState);
             }
 
-            try
-            {
-                var sectionDefinition = await _sectionDefinitionService.UpdateSectionDefinitionNameAsync(id, model.Name);
+            var sectionDefinition = await _sectionDefinitionService.UpdateSectionDefinitionNameAsync(id, model.Name);
 
-                if (sectionDefinition == null)
-                {
-                    return NotFound(new { message = $"No se encontró ninguna definición de sección con el ID {id}." });
-                }
-
-                return Ok(sectionDefinition);
-            }
-            catch (Exception ex)
+            if (sectionDefinition == null)
             {
-                return BadRequest(new { message = ex.Message });
+                return NotFound(new { message = $"No se encontró ninguna definición de sección con el ID {id}." });
             }
+
+            return Ok(sectionDefinition);
         }
 
         /// <summary>
@@ -199,21 +185,14 @@ namespace AppMultiTenant.Server.Controllers
                 return BadRequest(ModelState);
             }
 
-            try
-            {
-                var sectionDefinition = await _sectionDefinitionService.UpdateSectionDefinitionDescriptionAsync(id, model.Description);
+            var sectionDefinition = await _sectionDefinitionService.UpdateSectionDefinitionDescriptionAsync(id, model.Description);
 
-                if (sectionDefinition == null)
-                {
-                    return NotFound(new { message = $"No se encontró ninguna definición de sección con el ID {id}." });
-                }
-
-                return Ok(sectionDefinition);
-            }
-            catch (Exception ex)
+            if (sectionDefinition == null)
             {
-                return BadRequest(new { message = ex.Message });
+                return NotFound(new { message = $"No se encontró ninguna definición de sección con el ID {id}." });
             }
+
+            return Ok(sectionDefinition);
         }
 
         /// <summary>
@@ -230,43 +209,36 @@ namespace AppMultiTenant.Server.Controllers
                 return BadRequest(new { message = "El ID de la definición de sección no puede estar vacío." });
             }
 
-            try
+            // Verificar primero si la definición de sección puede ser eliminada
+            if (!force)
             {
-                // Verificar primero si la definición de sección puede ser eliminada
-                if (!force)
+                var canDelete = await _sectionDefinitionService.CanDeleteSectionDefinitionAsync(id);
+                if (!canDelete)
                 {
-                    var canDelete = await _sectionDefinitionService.CanDeleteSectionDefinitionAsync(id);
-                    if (!canDelete)
+                    return BadRequest(new
                     {
-                        return BadRequest(new
-                        {
-                            message = "La definición de sección no puede ser eliminada porque contiene datos. Use force=true para confirmar la eliminación.",
-                            requiresForce = true
-                        });
-                    }
+                        message = "La definición de sección no puede ser eliminada porque contiene datos. Use force=true para confirmar la eliminación.",
+                        requiresForce = true
+                    });
                 }
-
-                var result = await _sectionDefinitionService.DeleteSectionDefinitionAsync(id, force);
-
-                if (!result)
-                {
-                    return NotFound(new { message = $"No se encontró ninguna definición de sección con el ID {id}." });
-                }
-
-                return NoContent();
             }
-            catch (Exception ex)
+
+            var result = await _sectionDefinitionService.DeleteSectionDefinitionAsync(id, force);
+
+            if (!result)
             {
-                return BadRequest(new { message = ex.Message });
+                return NotFound(new { message = $"No se encontró ninguna definición de sección con el ID {id}." });
             }
+
+            return NoContent();
         }
 
         /// <summary>
-        /// Crea y asigna permisos para una sección a un rol específico
+        /// Crea y asigna los permisos necesarios para una sección a un rol específico
         /// </summary>
         /// <param name="id">ID de la definición de sección</param>
-        /// <param name="model">Datos del rol para asignar permisos</param>
-        /// <returns>Confirmación de la asignación de permisos</returns>
+        /// <param name="model">Datos para la asignación de permisos</param>
+        /// <returns>Lista de permisos creados y asignados</returns>
         [HttpPost("{id}/permissions")]
         [Authorize(Policy = "AssignPermissions")]
         public async Task<IActionResult> CreateAndAssignSectionPermissions(Guid id, [FromBody] AssignSectionPermissionsRequest model)
@@ -281,26 +253,18 @@ namespace AppMultiTenant.Server.Controllers
                 return BadRequest(ModelState);
             }
 
-            try
+            var sectionDefinition = await _sectionDefinitionService.GetSectionDefinitionByIdAsync(id);
+            if (sectionDefinition == null)
             {
-                // Primero verificar que la sección existe
-                var sectionDefinition = await _sectionDefinitionService.GetSectionDefinitionByIdAsync(id);
-                if (sectionDefinition == null)
-                {
-                    return NotFound(new { message = $"No se encontró ninguna definición de sección con el ID {id}." });
-                }
-
-                var permissions = await _sectionDefinitionService.CreateAndAssignSectionPermissionsAsync(
-                    id,
-                    sectionDefinition.Name,
-                    model.AdminRoleId);
-
-                return Ok(permissions);
+                return NotFound(new { message = $"No se encontró ninguna definición de sección con el ID {id}." });
             }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
+
+            var permissions = await _sectionDefinitionService.CreateAndAssignSectionPermissionsAsync(
+                id, 
+                sectionDefinition.Name, 
+                model.AdminRoleId);
+
+            return Ok(permissions);
         }
 
         #region Clases de Solicitudes (Request)

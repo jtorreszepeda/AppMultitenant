@@ -144,20 +144,13 @@ namespace AppMultiTenant.Server.Controllers
                 return BadRequest(ModelState);
             }
 
-            try
-            {
-                var user = await _userService.CreateUserAsync(
-                    model.UserName,
-                    model.Email,
-                    model.Password,
-                    model.FullName);
+            var user = await _userService.CreateUserAsync(
+                model.UserName,
+                model.Email,
+                model.Password,
+                model.FullName);
 
-                return CreatedAtAction(nameof(GetUserById), new { id = user.Id }, user);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
+            return CreatedAtAction(nameof(GetUserById), new { id = user.Id }, user);
         }
 
         /// <summary>
@@ -180,21 +173,14 @@ namespace AppMultiTenant.Server.Controllers
                 return BadRequest(ModelState);
             }
 
-            try
-            {
-                var user = await _userService.UpdateUserFullNameAsync(id, model.FullName);
+            var user = await _userService.UpdateUserFullNameAsync(id, model.FullName);
 
-                if (user == null)
-                {
-                    return NotFound(new { message = $"No se encontró ningún usuario con el ID {id}." });
-                }
-
-                return Ok(user);
-            }
-            catch (Exception ex)
+            if (user == null)
             {
-                return BadRequest(new { message = ex.Message });
+                return NotFound(new { message = $"No se encontró ningún usuario con el ID {id}." });
             }
+
+            return Ok(user);
         }
 
         /// <summary>
@@ -217,21 +203,14 @@ namespace AppMultiTenant.Server.Controllers
                 return BadRequest(ModelState);
             }
 
-            try
-            {
-                var user = await _userService.UpdateUserEmailAsync(id, model.Email);
+            var user = await _userService.UpdateUserEmailAsync(id, model.Email);
 
-                if (user == null)
-                {
-                    return NotFound(new { message = $"No se encontró ningún usuario con el ID {id}." });
-                }
-
-                return Ok(user);
-            }
-            catch (Exception ex)
+            if (user == null)
             {
-                return BadRequest(new { message = ex.Message });
+                return NotFound(new { message = $"No se encontró ningún usuario con el ID {id}." });
             }
+
+            return Ok(user);
         }
 
         /// <summary>
@@ -254,21 +233,14 @@ namespace AppMultiTenant.Server.Controllers
                 return BadRequest(ModelState);
             }
 
-            try
-            {
-                var user = await _userService.UpdateUserNameAsync(id, model.UserName);
+            var user = await _userService.UpdateUserNameAsync(id, model.UserName);
 
-                if (user == null)
-                {
-                    return NotFound(new { message = $"No se encontró ningún usuario con el ID {id}." });
-                }
-
-                return Ok(user);
-            }
-            catch (Exception ex)
+            if (user == null)
             {
-                return BadRequest(new { message = ex.Message });
+                return NotFound(new { message = $"No se encontró ningún usuario con el ID {id}." });
             }
+
+            return Ok(user);
         }
 
         /// <summary>
@@ -291,21 +263,14 @@ namespace AppMultiTenant.Server.Controllers
                 return BadRequest(ModelState);
             }
 
-            try
-            {
-                bool success = await _userService.ResetUserPasswordAsync(id, model.NewPassword);
+            var success = await _userService.ResetUserPasswordAsync(id, model.NewPassword);
 
-                if (!success)
-                {
-                    return NotFound(new { message = $"No se encontró ningún usuario con el ID {id} o no se pudo restablecer la contraseña." });
-                }
-
-                return Ok(new { message = "Contraseña restablecida con éxito." });
-            }
-            catch (Exception ex)
+            if (!success)
             {
-                return BadRequest(new { message = ex.Message });
+                return NotFound(new { message = $"No se encontró ningún usuario con el ID {id}." });
             }
+
+            return Ok(new { message = "Contraseña restablecida correctamente." });
         }
 
         /// <summary>
@@ -322,21 +287,14 @@ namespace AppMultiTenant.Server.Controllers
                 return BadRequest(new { message = "El ID del usuario no puede estar vacío." });
             }
 
-            try
-            {
-                var user = await _userService.ActivateUserAsync(id);
+            var user = await _userService.ActivateUserAsync(id);
 
-                if (user == null)
-                {
-                    return NotFound(new { message = $"No se encontró ningún usuario con el ID {id}." });
-                }
-
-                return Ok(user);
-            }
-            catch (Exception ex)
+            if (user == null)
             {
-                return BadRequest(new { message = ex.Message });
+                return NotFound(new { message = $"No se encontró ningún usuario con el ID {id}." });
             }
+
+            return Ok(user);
         }
 
         /// <summary>
@@ -353,21 +311,14 @@ namespace AppMultiTenant.Server.Controllers
                 return BadRequest(new { message = "El ID del usuario no puede estar vacío." });
             }
 
-            try
-            {
-                var user = await _userService.DeactivateUserAsync(id);
+            var user = await _userService.DeactivateUserAsync(id);
 
-                if (user == null)
-                {
-                    return NotFound(new { message = $"No se encontró ningún usuario con el ID {id}." });
-                }
-
-                return Ok(user);
-            }
-            catch (Exception ex)
+            if (user == null)
             {
-                return BadRequest(new { message = ex.Message });
+                return NotFound(new { message = $"No se encontró ningún usuario con el ID {id}." });
             }
+
+            return Ok(user);
         }
 
         /// <summary>
@@ -390,21 +341,19 @@ namespace AppMultiTenant.Server.Controllers
                 return BadRequest(new { message = "Se requiere el ID del usuario actual." });
             }
 
-            try
+            if (id == currentUserId)
             {
-                bool deleted = await _userService.DeleteUserAsync(id, currentUserId);
-
-                if (!deleted)
-                {
-                    return NotFound(new { message = $"No se encontró ningún usuario con el ID {id} o no se pudo eliminar." });
-                }
-
-                return Ok(new { message = $"Usuario con ID {id} eliminado correctamente." });
+                return BadRequest(new { message = "No puedes eliminar tu propia cuenta." });
             }
-            catch (Exception ex)
+
+            var success = await _userService.DeleteUserAsync(id, currentUserId);
+
+            if (!success)
             {
-                return BadRequest(new { message = ex.Message });
+                return NotFound(new { message = $"No se encontró ningún usuario con el ID {id} o no se pudo eliminar." });
             }
+
+            return NoContent();
         }
 
         /// <summary>
@@ -421,15 +370,14 @@ namespace AppMultiTenant.Server.Controllers
                 return BadRequest(new { message = "El ID del usuario no puede estar vacío." });
             }
 
-            try
+            var roles = await _userService.GetUserRolesAsync(id);
+
+            if (roles == null)
             {
-                var roles = await _userService.GetUserRolesAsync(id);
-                return Ok(roles);
+                return NotFound(new { message = $"No se encontró ningún usuario con el ID {id}." });
             }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
+
+            return Ok(roles);
         }
 
         /// <summary>
@@ -452,15 +400,14 @@ namespace AppMultiTenant.Server.Controllers
                 return BadRequest(ModelState);
             }
 
-            try
+            var roles = await _userService.AssignRolesToUserAsync(id, model.RoleIds);
+
+            if (roles == null)
             {
-                var roles = await _userService.AssignRolesToUserAsync(id, model.RoleIds);
-                return Ok(roles);
+                return NotFound(new { message = $"No se encontró ningún usuario con el ID {id}." });
             }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
+
+            return Ok(roles);
         }
 
         /// <summary>
@@ -483,21 +430,14 @@ namespace AppMultiTenant.Server.Controllers
                 return BadRequest(ModelState);
             }
 
-            try
-            {
-                bool success = await _userService.RemoveRolesFromUserAsync(id, model.RoleIds);
+            var roles = await _userService.RemoveRolesFromUserAsync(id, model.RoleIds);
 
-                if (!success)
-                {
-                    return NotFound(new { message = $"No se encontró ningún usuario con el ID {id} o no se pudieron remover los roles." });
-                }
-
-                return Ok(new { message = "Roles removidos correctamente del usuario." });
-            }
-            catch (Exception ex)
+            if (roles == null)
             {
-                return BadRequest(new { message = ex.Message });
+                return NotFound(new { message = $"No se encontró ningún usuario con el ID {id}." });
             }
+
+            return Ok(roles);
         }
     }
 

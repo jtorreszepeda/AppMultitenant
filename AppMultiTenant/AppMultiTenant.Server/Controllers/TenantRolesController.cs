@@ -125,18 +125,11 @@ namespace AppMultiTenant.Server.Controllers
                 return BadRequest(ModelState);
             }
 
-            try
-            {
-                var role = await _roleService.CreateRoleAsync(
-                    model.Name,
-                    model.Description);
+            var role = await _roleService.CreateRoleAsync(
+                model.Name,
+                model.Description);
 
-                return CreatedAtAction(nameof(GetRoleById), new { id = role.Id }, role);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
+            return CreatedAtAction(nameof(GetRoleById), new { id = role.Id }, role);
         }
 
         /// <summary>
@@ -159,21 +152,14 @@ namespace AppMultiTenant.Server.Controllers
                 return BadRequest(ModelState);
             }
 
-            try
-            {
-                var role = await _roleService.UpdateRoleNameAsync(id, model.Name);
+            var role = await _roleService.UpdateRoleNameAsync(id, model.Name);
 
-                if (role == null)
-                {
-                    return NotFound(new { message = $"No se encontró ningún rol con el ID {id}." });
-                }
-
-                return Ok(role);
-            }
-            catch (Exception ex)
+            if (role == null)
             {
-                return BadRequest(new { message = ex.Message });
+                return NotFound(new { message = $"No se encontró ningún rol con el ID {id}." });
             }
+
+            return Ok(role);
         }
 
         /// <summary>
@@ -196,21 +182,14 @@ namespace AppMultiTenant.Server.Controllers
                 return BadRequest(ModelState);
             }
 
-            try
-            {
-                var role = await _roleService.UpdateRoleDescriptionAsync(id, model.Description);
+            var role = await _roleService.UpdateRoleDescriptionAsync(id, model.Description);
 
-                if (role == null)
-                {
-                    return NotFound(new { message = $"No se encontró ningún rol con el ID {id}." });
-                }
-
-                return Ok(role);
-            }
-            catch (Exception ex)
+            if (role == null)
             {
-                return BadRequest(new { message = ex.Message });
+                return NotFound(new { message = $"No se encontró ningún rol con el ID {id}." });
             }
+
+            return Ok(role);
         }
 
         /// <summary>
@@ -227,28 +206,21 @@ namespace AppMultiTenant.Server.Controllers
                 return BadRequest(new { message = "El ID del rol no puede estar vacío." });
             }
 
-            try
-            {
-                var success = await _roleService.DeleteRoleAsync(id);
+            var success = await _roleService.DeleteRoleAsync(id);
 
-                if (!success)
-                {
-                    return BadRequest(new { message = $"No se pudo eliminar el rol con ID {id}. Puede estar en uso por usuarios." });
-                }
-
-                return NoContent();
-            }
-            catch (Exception ex)
+            if (!success)
             {
-                return BadRequest(new { message = ex.Message });
+                return BadRequest(new { message = $"No se pudo eliminar el rol con ID {id}. Puede estar en uso por usuarios." });
             }
+
+            return NoContent();
         }
 
         /// <summary>
         /// Obtiene todos los permisos disponibles en el sistema
         /// </summary>
         /// <returns>Lista de permisos</returns>
-        [HttpGet("permissions")]
+        [HttpGet("all-permissions")]
         [Authorize(Policy = "ViewRoles")]
         public async Task<IActionResult> GetAllPermissions()
         {
@@ -257,10 +229,10 @@ namespace AppMultiTenant.Server.Controllers
         }
 
         /// <summary>
-        /// Obtiene los permisos asignados a un rol
+        /// Obtiene todos los permisos asignados a un rol
         /// </summary>
         /// <param name="id">ID del rol</param>
-        /// <returns>Lista de permisos del rol</returns>
+        /// <returns>Lista de permisos asignados al rol</returns>
         [HttpGet("{id}/permissions")]
         [Authorize(Policy = "ViewRoles")]
         public async Task<IActionResult> GetRolePermissions(Guid id)
@@ -270,23 +242,22 @@ namespace AppMultiTenant.Server.Controllers
                 return BadRequest(new { message = "El ID del rol no puede estar vacío." });
             }
 
-            // Primero verificamos que el rol exista
-            var role = await _roleService.GetRoleByIdAsync(id);
-            if (role == null)
+            var permissions = await _roleService.GetRolePermissionsAsync(id);
+
+            if (permissions == null)
             {
                 return NotFound(new { message = $"No se encontró ningún rol con el ID {id}." });
             }
 
-            var permissions = await _roleService.GetRolePermissionsAsync(id);
             return Ok(permissions);
         }
 
         /// <summary>
-        /// Asigna permisos a un rol
+        /// Asigna permisos a un rol existente
         /// </summary>
         /// <param name="id">ID del rol</param>
-        /// <param name="model">Permisos a asignar</param>
-        /// <returns>Lista actualizada de permisos del rol</returns>
+        /// <param name="model">Lista de IDs de permisos a asignar</param>
+        /// <returns>Lista actualizada de permisos asignados al rol</returns>
         [HttpPost("{id}/permissions")]
         [Authorize(Policy = "AssignPermissions")]
         public async Task<IActionResult> AssignPermissionsToRole(Guid id, [FromBody] AssignPermissionsRequest model)
@@ -301,30 +272,22 @@ namespace AppMultiTenant.Server.Controllers
                 return BadRequest(ModelState);
             }
 
-            // Primero verificamos que el rol exista
-            var role = await _roleService.GetRoleByIdAsync(id);
-            if (role == null)
+            var updatedPermissions = await _roleService.AssignPermissionsToRoleAsync(id, model.PermissionIds);
+
+            if (updatedPermissions == null)
             {
                 return NotFound(new { message = $"No se encontró ningún rol con el ID {id}." });
             }
 
-            try
-            {
-                var permissions = await _roleService.AssignPermissionsToRoleAsync(id, model.PermissionIds);
-                return Ok(permissions);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
+            return Ok(updatedPermissions);
         }
 
         /// <summary>
-        /// Quita permisos de un rol
+        /// Elimina permisos de un rol existente
         /// </summary>
         /// <param name="id">ID del rol</param>
-        /// <param name="model">Permisos a quitar</param>
-        /// <returns>Lista actualizada de permisos del rol</returns>
+        /// <param name="model">Lista de IDs de permisos a remover</param>
+        /// <returns>Lista actualizada de permisos asignados al rol</returns>
         [HttpDelete("{id}/permissions")]
         [Authorize(Policy = "AssignPermissions")]
         public async Task<IActionResult> RemovePermissionsFromRole(Guid id, [FromBody] RemovePermissionsRequest model)
@@ -339,28 +302,14 @@ namespace AppMultiTenant.Server.Controllers
                 return BadRequest(ModelState);
             }
 
-            // Primero verificamos que el rol exista
-            var role = await _roleService.GetRoleByIdAsync(id);
-            if (role == null)
+            var updatedPermissions = await _roleService.RemovePermissionsFromRoleAsync(id, model.PermissionIds);
+
+            if (updatedPermissions == null)
             {
                 return NotFound(new { message = $"No se encontró ningún rol con el ID {id}." });
             }
 
-            try
-            {
-                var success = await _roleService.RemovePermissionsFromRoleAsync(id, model.PermissionIds);
-
-                if (!success)
-                {
-                    return BadRequest(new { message = "No se pudieron remover algunos de los permisos especificados." });
-                }
-
-                return NoContent();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
+            return Ok(updatedPermissions);
         }
 
         #region Request Models

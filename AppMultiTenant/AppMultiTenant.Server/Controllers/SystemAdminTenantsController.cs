@@ -135,28 +135,21 @@ namespace AppMultiTenant.Server.Controllers
                 return BadRequest(ModelState);
             }
 
-            try
-            {
-                var tenant = await _tenantService.CreateTenantAsync(model.Name, model.Identifier);
+            var tenant = await _tenantService.CreateTenantAsync(model.Name, model.Identifier);
 
-                // Si se proporcionaron datos del administrador inicial, crearlo
-                if (!string.IsNullOrWhiteSpace(model.AdminEmail) && !string.IsNullOrWhiteSpace(model.AdminPassword))
-                {
-                    await _tenantService.CreateInitialTenantAdminAsync(
-                        tenant.TenantId,
-                        model.AdminEmail,
-                        model.AdminUserName ?? model.AdminEmail,
-                        model.AdminPassword,
-                        model.AdminFullName ?? model.AdminEmail
-                    );
-                }
-
-                return CreatedAtAction(nameof(GetTenantById), new { id = tenant.TenantId }, tenant);
-            }
-            catch (Exception ex)
+            // Si se proporcionaron datos del administrador inicial, crearlo
+            if (!string.IsNullOrWhiteSpace(model.AdminEmail) && !string.IsNullOrWhiteSpace(model.AdminPassword))
             {
-                return BadRequest(new { message = ex.Message });
+                await _tenantService.CreateInitialTenantAdminAsync(
+                    tenant.TenantId,
+                    model.AdminEmail,
+                    model.AdminUserName ?? model.AdminEmail,
+                    model.AdminPassword,
+                    model.AdminFullName ?? model.AdminEmail
+                );
             }
+
+            return CreatedAtAction(nameof(GetTenantById), new { id = tenant.TenantId }, tenant);
         }
 
         /// <summary>
@@ -178,21 +171,14 @@ namespace AppMultiTenant.Server.Controllers
                 return BadRequest(ModelState);
             }
 
-            try
-            {
-                var tenant = await _tenantService.UpdateTenantNameAsync(id, model.Name);
+            var tenant = await _tenantService.UpdateTenantNameAsync(id, model.Name);
 
-                if (tenant == null)
-                {
-                    return NotFound(new { message = $"No se encontró ningún inquilino con el ID {id}." });
-                }
-
-                return Ok(tenant);
-            }
-            catch (Exception ex)
+            if (tenant == null)
             {
-                return BadRequest(new { message = ex.Message });
+                return NotFound(new { message = $"No se encontró ningún inquilino con el ID {id}." });
             }
+
+            return Ok(tenant);
         }
 
         /// <summary>
@@ -214,21 +200,14 @@ namespace AppMultiTenant.Server.Controllers
                 return BadRequest(ModelState);
             }
 
-            try
-            {
-                var tenant = await _tenantService.UpdateTenantIdentifierAsync(id, model.Identifier);
+            var tenant = await _tenantService.UpdateTenantIdentifierAsync(id, model.Identifier);
 
-                if (tenant == null)
-                {
-                    return NotFound(new { message = $"No se encontró ningún inquilino con el ID {id}." });
-                }
-
-                return Ok(tenant);
-            }
-            catch (Exception ex)
+            if (tenant == null)
             {
-                return BadRequest(new { message = ex.Message });
+                return NotFound(new { message = $"No se encontró ningún inquilino con el ID {id}." });
             }
+
+            return Ok(tenant);
         }
 
         /// <summary>
@@ -244,21 +223,14 @@ namespace AppMultiTenant.Server.Controllers
                 return BadRequest(new { message = "El ID del inquilino no puede estar vacío." });
             }
 
-            try
-            {
-                var tenant = await _tenantService.ActivateTenantAsync(id);
+            var tenant = await _tenantService.ActivateTenantAsync(id);
 
-                if (tenant == null)
-                {
-                    return NotFound(new { message = $"No se encontró ningún inquilino con el ID {id}." });
-                }
-
-                return Ok(tenant);
-            }
-            catch (Exception ex)
+            if (tenant == null)
             {
-                return BadRequest(new { message = ex.Message });
+                return NotFound(new { message = $"No se encontró ningún inquilino con el ID {id}." });
             }
+
+            return Ok(tenant);
         }
 
         /// <summary>
@@ -274,28 +246,21 @@ namespace AppMultiTenant.Server.Controllers
                 return BadRequest(new { message = "El ID del inquilino no puede estar vacío." });
             }
 
-            try
-            {
-                var tenant = await _tenantService.DeactivateTenantAsync(id);
+            var tenant = await _tenantService.DeactivateTenantAsync(id);
 
-                if (tenant == null)
-                {
-                    return NotFound(new { message = $"No se encontró ningún inquilino con el ID {id}." });
-                }
-
-                return Ok(tenant);
-            }
-            catch (Exception ex)
+            if (tenant == null)
             {
-                return BadRequest(new { message = ex.Message });
+                return NotFound(new { message = $"No se encontró ningún inquilino con el ID {id}." });
             }
+
+            return Ok(tenant);
         }
 
         /// <summary>
-        /// Elimina un inquilino completamente (operación peligrosa)
+        /// Elimina un inquilino
         /// </summary>
         /// <param name="id">ID del inquilino</param>
-        /// <returns>Confirmación de eliminación</returns>
+        /// <returns>Resultado de la operación</returns>
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteTenant(Guid id)
         {
@@ -304,21 +269,14 @@ namespace AppMultiTenant.Server.Controllers
                 return BadRequest(new { message = "El ID del inquilino no puede estar vacío." });
             }
 
-            try
-            {
-                bool deleted = await _tenantService.DeleteTenantAsync(id);
+            var success = await _tenantService.DeleteTenantAsync(id);
 
-                if (!deleted)
-                {
-                    return NotFound(new { message = $"No se encontró ningún inquilino con el ID {id} o no se pudo eliminar." });
-                }
-
-                return Ok(new { message = $"Inquilino con ID {id} eliminado correctamente." });
-            }
-            catch (Exception ex)
+            if (!success)
             {
-                return BadRequest(new { message = ex.Message });
+                return NotFound(new { message = $"No se encontró ningún inquilino con el ID {id}." });
             }
+
+            return NoContent();
         }
     }
 
