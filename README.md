@@ -58,15 +58,73 @@ La aplicación sigue una arquitectura limpia con separación clara de responsabi
                                                    └────────────────────┘
 ```
 
-## Proyectos de la Solución
+## Proyectos de la Solución y Sus Componentes Principales
 
-1. **`AppMultiTenant.Domain`** - Núcleo de la aplicación, contiene entidades y lógica de negocio
-2. **`AppMultiTenant.Application`** - Orquesta los casos de uso utilizando las entidades del dominio
-3. **`AppMultiTenant.Infrastructure`** - Implementa interfaces de aplicación y acceso a datos
-4. **`AppMultiTenant.Server`** - API Web que expone la funcionalidad
-5. **`AppMultiTenant.Client`** - Interfaz de usuario Blazor WebAssembly
+### 1. **`AppMultiTenant.Domain`** - Entidades y Lógica de Negocio
+- **`Tenant`**: Representa un inquilino (organización) en el sistema.
+- **`ApplicationUser`**: Usuario que pertenece a un inquilino específico.
+- **`ApplicationRole`**: Rol específico de un inquilino.
+- **`Permission`**: Permisos del sistema que se pueden asignar a roles.
+- **`RolePermission`**: Asociación entre un rol y un permiso.
+- **`AppSectionDefinition`**: Define una estructura de datos personalizada para un inquilino.
+- **`ITenantEntity`**: Interfaz que deben implementar todas las entidades que pertenecen a un inquilino.
 
-## Flujo de Trabajo Principal
+### 2. **`AppMultiTenant.Application`** - Casos de Uso y Lógica de Aplicación
+- **Interfaces de Servicios**:
+  - **`IAuthService`**: Maneja la autenticación de usuarios.
+  - **`ITenantUserService`**: Gestiona usuarios dentro de un inquilino.
+  - **`ITenantRoleService`**: Gestiona roles y permisos por inquilino.
+  - **`ITenantSectionDefinitionService`**: Gestiona definiciones de secciones personalizadas.
+  - **`ISystemAdminTenantService`**: Administra inquilinos a nivel de sistema.
+  - **`ITenantResolverService`**: Resuelve el inquilino actual.
+
+- **Interfaces de Persistencia**:
+  - **`IRepositoryBase<T>`**: Operaciones CRUD básicas para entidades.
+  - **`ITenantRepository`**: Acceso a datos de inquilinos.
+  - **`IUserRepository`**: Acceso a datos de usuarios.
+  - **`IRoleRepository`**: Acceso a datos de roles.
+  - **`IPermissionRepository`**: Acceso a datos de permisos.
+  - **`IAppSectionDefinitionRepository`**: Acceso a datos de definiciones de secciones.
+  - **`IUnitOfWork`**: Coordina operaciones de repositorios.
+
+- **Implementaciones de Servicios**:
+  - **`AuthService`**: Implementa `IAuthService`.
+  - **`TenantUserService`**: Implementa `ITenantUserService`.
+  - **`TenantRoleService`**: Implementa `ITenantRoleService`.
+  - **`TenantSectionDefinitionService`**: Implementa `ITenantSectionDefinitionService`.
+  - **`SystemAdminTenantService`**: Implementa `ISystemAdminTenantService`.
+  - **`ValidationService`**: Validación de datos en los servicios.
+
+### 3. **`AppMultiTenant.Infrastructure`** - Implementaciones Técnicas
+- **Persistencia**:
+  - **`AppDbContext`**: Contexto de Entity Framework Core que aplica filtrado por inquilino.
+  - **`RepositoryBase<T>`**: Implementación base de repositorios genéricos.
+  - **`TenantRepository`**: Implementa `ITenantRepository`.
+  - **`UserRepository`**: Implementa `IUserRepository`.
+  - **`RoleRepository`**: Implementa `IRoleRepository`.
+  - **`PermissionRepository`**: Implementa `IPermissionRepository`.
+  - **`AppSectionDefinitionRepository`**: Implementa `IAppSectionDefinitionRepository`.
+  - **`UnitOfWork`**: Implementa `IUnitOfWork`.
+
+- **Identidad**:
+  - **`TenantResolverService`**: Resuelve el inquilino desde subdominios, rutas, cabeceras HTTP o JWT.
+  - **`MultiTenantUserStore`**: Adaptación de Identity para soportar inquilinos.
+  - **`MultiTenantRoleStore`**: Adaptación de Identity para roles por inquilino.
+  - **`JwtConfiguration`**: Configuración para tokens JWT.
+  - **`IdentityConfiguration`**: Configuración general de Identity.
+
+### 4. **`AppMultiTenant.Server`** - API Web
+- **`TenantResolutionMiddleware`**: Middleware que resuelve el inquilino para cada solicitud.
+- **`Program.cs`**: Configuración de la aplicación, servicios y middleware.
+- **`Controllers/`**: Controladores REST que expondrán los servicios de la aplicación (pendientes de implementar).
+
+### 5. **`AppMultiTenant.Client`** - Interfaz de Usuario
+- **`Components/`**: Componentes Blazor para la interfaz.
+- **`ViewModels/`**: Implementaciones MVVM para la lógica de presentación.
+- **`Services/`**: Servicios del cliente para comunicación con la API.
+- **`State/`**: Gestión del estado de la aplicación cliente.
+
+## Flujo de Trabajo Detallado
 
 ### 1. Identificación del Inquilino (Tenant)
 
@@ -75,8 +133,21 @@ Cliente Web ──▶ HTTP Request ──▶ TenantResolutionMiddleware ──�
                                 (AppMultiTenant.Server)       (AppMultiTenant.Infrastructure)
 ```
 
-- **`TenantResolutionMiddleware`** (`AppMultiTenant.Server`): Intercepta cada solicitud HTTP para identificar a qué inquilino pertenece.
-- **`TenantResolverService`** (`AppMultiTenant.Infrastructure`): Determina el `TenantId` basado en el subdominio, ruta URL o token `JWT`.
+1. El cliente web hace una solicitud HTTP al servidor.
+2. **`TenantResolutionMiddleware`** (`AppMultiTenant.Server`):
+   - Intercepta cada solicitud HTTP.
+   - Llama a `ITenantResolverService` para determinar el inquilino actual.
+   - Almacena el `TenantId` y `TenantIdentifier` en `HttpContext.Items`.
+
+3. **`TenantResolverService`** (`AppMultiTenant.Infrastructure`):
+   - Implementa múltiples estrategias para identificar el inquilino:
+     - Por subdominio (ej. `tenant1.app.com`)
+     - Por ruta URL (ej. `/tenant1/...`)
+     - Por cabecera HTTP
+     - Por claims en el token JWT
+   - Almacena el inquilino identificado en un contexto AsyncLocal para disponibilidad en toda la solicitud.
+
+4. El `TenantId` resuelto se utilizará en todas las operaciones subsiguientes para garantizar el aislamiento de datos.
 
 ### 2. Autenticación y Autorización
 
@@ -85,10 +156,21 @@ Cliente ──▶ AuthController ──▶ AuthService ──▶ Identity ──
              (Server)          (Application)   (Infrastructure)
 ```
 
-- **`AuthController`** (`AppMultiTenant.Server`): Recibe credenciales de usuario y devuelve tokens `JWT`.
-- **`AuthService`** (`AppMultiTenant.Application`): Orquesta el proceso de autenticación y generación de token.
-- **`Identity`** (`AppMultiTenant.Infrastructure`): Valida credenciales contra la base de datos, teniendo en cuenta el `TenantId`.
-- **`CustomAuthenticationStateProvider`** (`AppMultiTenant.Client`): Gestiona el estado de autenticación en el cliente basado en `JWT`.
+1. El usuario envía credenciales a través del cliente.
+2. **`AuthController`** (`AppMultiTenant.Server`, pendiente de implementar):
+   - Recibe las credenciales del usuario.
+   - Llama a `IAuthService.LoginAsync()`.
+
+3. **`AuthService`** (`AppMultiTenant.Application`):
+   - Valida las credenciales contra Identity.
+   - Genera un token JWT con claims de usuario e inquilino.
+   - Devuelve el token y la información del usuario.
+
+4. **Identity** (`AppMultiTenant.Infrastructure`):
+   - `MultiTenantUserStore`: Adapta Identity para filtrar por `TenantId`.
+   - `MultiTenantRoleStore`: Gestiona roles específicos por inquilino.
+
+5. El cliente almacena el token JWT para usarlo en solicitudes futuras.
 
 ### 3. Gestión de Usuarios (por Inquilino)
 
@@ -97,9 +179,20 @@ Cliente ──▶ TenantUsersController ──▶ TenantUserService ──▶ Us
              (Server)                 (Application)         (Infrastructure)    (con filtro TenantId)
 ```
 
-- **`TenantUsersController`** (`AppMultiTenant.Server`): Endpoints para CRUD de usuarios dentro de un inquilino.
-- **`TenantUserService`** (`AppMultiTenant.Application`): Lógica de negocio para gestionar usuarios en un inquilino.
-- **`UserRepository`** (`AppMultiTenant.Infrastructure`): Acceso a datos de usuarios con filtrado automático por `TenantId`.
+1. **`TenantUsersController`** (`AppMultiTenant.Server`, pendiente de implementar):
+   - Expone endpoints para CRUD de usuarios.
+   - Obtiene el `TenantId` del contexto HTTP.
+   - Llama a métodos de `ITenantUserService`.
+
+2. **`TenantUserService`** (`AppMultiTenant.Application`):
+   - Implementa la lógica de negocio para gestionar usuarios.
+   - Utiliza `IUserRepository` para operaciones de datos.
+   - Valida que las operaciones respeten el contexto del inquilino actual.
+
+3. **`UserRepository`** (`AppMultiTenant.Infrastructure`):
+   - Implementa `IUserRepository`.
+   - Utiliza `AppDbContext` para operaciones de base de datos.
+   - Se beneficia del filtrado automático por `TenantId` en `AppDbContext`.
 
 ### 4. Gestión de Roles y Permisos (por Inquilino)
 
@@ -108,9 +201,18 @@ Cliente ──▶ TenantRolesController ──▶ TenantRoleService ──▶ Ro
              (Server)                 (Application)         (Infrastructure)                          (con filtro TenantId)
 ```
 
-- **`TenantRolesController`** (`AppMultiTenant.Server`): Endpoints para CRUD de roles y asignación de permisos.
-- **`TenantRoleService`** (`AppMultiTenant.Application`): Lógica para gestionar roles y sus permisos.
-- **`RoleRepository/PermissionRepository`** (`AppMultiTenant.Infrastructure`): Acceso a datos de roles y permisos.
+1. **`TenantRolesController`** (`AppMultiTenant.Server`, pendiente de implementar):
+   - Expone endpoints para CRUD de roles y asignación de permisos.
+   - Llama a métodos de `ITenantRoleService`.
+
+2. **`TenantRoleService`** (`AppMultiTenant.Application`):
+   - Implementa la lógica para gestionar roles y sus permisos.
+   - Utiliza `IRoleRepository` y `IPermissionRepository`.
+   - Maneja la creación/eliminación de asociaciones `RolePermission`.
+
+3. **`RoleRepository/PermissionRepository`** (`AppMultiTenant.Infrastructure`):
+   - Implementan las interfaces correspondientes.
+   - Utilizan `AppDbContext` con filtrado automático por `TenantId`.
 
 ### 5. Gestión de Secciones de Aplicación (por Inquilino)
 
@@ -119,20 +221,22 @@ Cliente ──▶ TenantSectionDefinitionsController ──▶ TenantSectionDefi
              (Server)                              (Application)                      (Infrastructure)                    (con filtro TenantId)
 ```
 
-- **`TenantSectionDefinitionsController`** (`AppMultiTenant.Server`): Endpoints para definir secciones personalizadas.
-- **`TenantSectionDefinitionService`** (`AppMultiTenant.Application`): Lógica para gestionar estructuras de datos personalizadas.
-- **`AppSectionDefinitionRepository`** (`AppMultiTenant.Infrastructure`): Acceso a datos de definiciones de secciones.
+1. **`TenantSectionDefinitionsController`** (`AppMultiTenant.Server`, pendiente de implementar):
+   - Expone endpoints para definir estructuras de datos personalizadas.
+   - Llama a métodos de `ITenantSectionDefinitionService`.
+
+2. **`TenantSectionDefinitionService`** (`AppMultiTenant.Application`):
+   - Implementa la lógica para definir y gestionar secciones personalizadas.
+   - Utiliza `IAppSectionDefinitionRepository`.
+   - Gestiona la creación de permisos específicos para las secciones definidas.
+
+3. **`AppSectionDefinitionRepository`** (`AppMultiTenant.Infrastructure`):
+   - Implementa `IAppSectionDefinitionRepository`.
+   - Utiliza `AppDbContext` con filtrado automático por `TenantId`.
 
 ### 6. Gestión de Contenido Dinámico (CRUD por Sección)
 
-```
-Cliente ──▶ TenantSectionDataController ──▶ TenantSectionDataService ──▶ SectionDataEntryRepository ──▶ Base de Datos
-             (Server)                       (Application)                (Infrastructure)                (con filtro TenantId)
-```
-
-- **`TenantSectionDataController`** (`AppMultiTenant.Server`): Endpoints para CRUD de datos en secciones personalizadas.
-- **`TenantSectionDataService`** (`AppMultiTenant.Application`): Lógica para gestionar los datos dentro de secciones.
-- **`SectionDataEntryRepository`** (`AppMultiTenant.Infrastructure`): Acceso a datos de entradas en secciones.
+Esta funcionalidad está pendiente de implementar según el plan del proyecto.
 
 ### 7. Administración del Sistema (Super Administrador)
 
@@ -141,11 +245,50 @@ Cliente ──▶ SystemAdminTenantsController ──▶ SystemAdminTenantServic
              (Server)                         (Application)                (Infrastructure)
 ```
 
-- **`SystemAdminTenantsController`** (`AppMultiTenant.Server`): Endpoints para que el Super Admin gestione inquilinos.
-- **`SystemAdminTenantService`** (`AppMultiTenant.Application`): Lógica para la creación y gestión de inquilinos.
-- **`TenantRepository`** (`AppMultiTenant.Infrastructure`): Acceso a datos de inquilinos.
+1. **`SystemAdminTenantsController`** (`AppMultiTenant.Server`, pendiente de implementar):
+   - Expone endpoints para la gestión de inquilinos.
+   - Llama a métodos de `ISystemAdminTenantService`.
 
-## Flujo MVVM en el Cliente Blazor WebAssembly
+2. **`SystemAdminTenantService`** (`AppMultiTenant.Application`):
+   - Implementa la lógica para crear y gestionar inquilinos.
+   - Utiliza `ITenantRepository` para operaciones de datos.
+   - Configura inquilinos iniciales con administradores por defecto.
+
+3. **`TenantRepository`** (`AppMultiTenant.Infrastructure`):
+   - Implementa `ITenantRepository`.
+   - Utiliza `AppDbContext` para operaciones de base de datos.
+   - No aplica filtrado por `TenantId` para la entidad `Tenant`.
+
+## Filtrado por Inquilino en Base de Datos - El Corazón del Multi-tenant
+
+Un aspecto clave de la arquitectura:
+
+```
+┌─────────────────┐     ┌────────────────┐     ┌───────────────────────────┐
+│                 │     │                │     │                           │
+│   Repository    │────▶│  AppDbContext  │────▶│  Entity.HasQueryFilter    │────▶ SQL con WHERE TenantId = X
+│                 │     │                │     │  (Global Query Filters)   │
+│                 │     │                │     │                           │
+└─────────────────┘     └────────────────┘     └───────────────────────────┘
+```
+
+- **`AppDbContext`** (`AppMultiTenant.Infrastructure`):
+  - Recibe el `ITenantResolverService` mediante inyección de dependencias.
+  - Obtiene el `TenantId` actual para la solicitud.
+  - En `OnModelCreating()`, aplica `HasQueryFilter()` a cada entidad que implementa `ITenantEntity`.
+  - Sobrescribe `SaveChanges()` y `SaveChangesAsync()` para asignar automáticamente el `TenantId` a entidades nuevas.
+
+- **`RepositoryBase<T>`** (`AppMultiTenant.Infrastructure`):
+  - Implementación base para todos los repositorios.
+  - Utiliza `AppDbContext` para las operaciones CRUD.
+  - Se beneficia del filtrado automático sin tener que aplicar filtros manualmente.
+
+Este mecanismo garantiza que:
+1. Las consultas **sólo devuelven datos** del inquilino actual.
+2. Las entidades nuevas **se asignan automáticamente** al inquilino actual.
+3. El código de repositorio permanece **simple y libre de lógica de filtrado manual**.
+
+## Flujo MVVM en el Cliente Blazor WebAssembly (Planificado)
 
 ```
 ┌────────────────┐      ┌────────────────┐      ┌────────────────┐
@@ -165,49 +308,42 @@ Cliente ──▶ SystemAdminTenantsController ──▶ SystemAdminTenantServic
 ```
 
 1. **Vistas** (`AppMultiTenant.Client`):
-   - Archivos `.razor` que representan la interfaz de usuario
-   - Conectadas a sus ViewModels correspondientes
+   - Archivos `.razor` que representan la interfaz de usuario.
+   - Enlazados a ViewModels correspondientes mediante inyección de dependencias.
+   - Muestran datos y responden a interacciones del usuario.
 
 2. **ViewModels** (`AppMultiTenant.Client`):
-   - Contienen la lógica de presentación y estado de la UI
-   - Gestionan las llamadas a la API y preparan los datos para las vistas
+   - Implementan propiedades y comandos para las vistas.
+   - Gestionan el estado de la UI y la validación.
+   - Utilizan los ApiClients para comunicarse con el backend.
 
 3. **ApiClients** (`AppMultiTenant.Client`):
-   - Encapsulan la comunicación HTTP con la API Backend
-   - Gestionan la serialización/deserialización de entidades
-
-## Filtrado por Inquilino en Base de Datos
-
-Un aspecto clave de la arquitectura:
-
-```
-┌─────────────────┐     ┌────────────────┐     ┌───────────────────┐
-│                 │     │                │     │                   │
-│   Repository    │────▶│  AppDbContext  │────▶│  Global Filters   │────▶ SQL con WHERE TenantId = X
-│                 │     │                │     │                   │
-│                 │     │                │     │                   │
-└─────────────────┘     └────────────────┘     └───────────────────┘
-```
-
-- **`AppDbContext`** (`AppMultiTenant.Infrastructure`): Utiliza EF Core Global Query Filters para filtrar automáticamente todas las consultas por TenantId.
-- Este mecanismo garantiza que los datos de un inquilino nunca sean accesibles para otros inquilinos.
-
-## Entidades Principales del Dominio
-
-- **`Tenant`** (`AppMultiTenant.Domain`): Representa un inquilino en el sistema.
-- **`ApplicationUser`** (`AppMultiTenant.Domain`): Usuario dentro de un inquilino específico (contiene TenantId).
-- **`ApplicationRole`** (`AppMultiTenant.Domain`): Rol dentro de un inquilino específico (contiene TenantId).
-- **`Permission`** (`AppMultiTenant.Domain`): Permisos que pueden asignarse a roles.
-- **`AppSectionDefinition`** (`AppMultiTenant.Domain`): Define una estructura de datos personalizada para un inquilino.
-
+   - Encapsulan la comunicación HTTP con la API.
+   - Gestionan el token JWT para autenticación.
+   - Serializan/deserializan entidades del dominio.
+   - Manejan errores de comunicación y respuestas de la API.
 
 ## Resumen Simple
 
 La aplicación permite que múltiples organizaciones (inquilinos) utilicen la misma plataforma mientras mantienen sus datos completamente separados. Cada inquilino puede:
 
-1. Gestionar sus propios usuarios
-2. Definir roles y permisos personalizados
-3. Crear estructuras de datos personalizadas (secciones)
-4. Trabajar con datos en estas secciones personalizadas
+1. **Gestionar sus propios usuarios**: Cada inquilino tiene su propio conjunto de usuarios que solo pueden acceder a los datos de ese inquilino.
 
-Todo esto mientras el sistema garantiza que los datos de un inquilino nunca son accesibles para otros inquilinos, gracias al filtrado automático por TenantId en todos los niveles de la aplicación.
+2. **Definir roles y permisos personalizados**: Los administradores de cada inquilino pueden crear roles específicos y asignarles permisos granulares.
+
+3. **Crear estructuras de datos personalizadas**: Cada inquilino puede definir sus propias "secciones" con los campos que necesite para sus datos.
+
+4. **Trabajar con datos en estas secciones personalizadas**: Los usuarios pueden crear, ver, editar y eliminar datos en las secciones a las que tienen acceso.
+
+Todo esto mientras el sistema garantiza que los datos de un inquilino nunca son accesibles para otros inquilinos, gracias al filtrado automático por `TenantId` en todos los niveles de la aplicación.
+
+## Estado Actual del Proyecto
+
+Según la lista de tareas, el proyecto se encuentra en la fase de desarrollo de la API Backend. Se han completado:
+
+- La definición de entidades del dominio
+- Las interfaces e implementaciones de servicios de aplicación
+- La configuración de la infraestructura y base de datos con soporte multi-inquilino
+- La implementación de la resolución de inquilinos
+
+Las próximas fases incluyen la implementación de los controladores de la API y el desarrollo del cliente Blazor WebAssembly.
