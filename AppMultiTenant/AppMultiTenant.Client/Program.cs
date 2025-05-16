@@ -1,4 +1,6 @@
 using AppMultiTenant.Client.Components;
+using AppMultiTenant.Client.Services;
+using Microsoft.AspNetCore.Components.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,9 +10,10 @@ builder.Services.AddRazorComponents();
 // Configuración básica para HttpClient
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.Configuration["ApiBaseUrl"] ?? builder.Configuration["ApiSettings:BaseUrl"] ?? "https://localhost:7001") });
 
-// Registrar servicios para autenticación (placeholder para futura implementación)
-// builder.Services.AddScoped<CustomAuthenticationStateProvider>();
-// builder.Services.AddScoped<IAuthService, AuthService>();
+// Registrar servicios para autenticación
+builder.Services.AddScoped<CustomAuthenticationStateProvider>();
+builder.Services.AddScoped<AuthenticationStateProvider>(provider => provider.GetRequiredService<CustomAuthenticationStateProvider>());
+builder.Services.AddAuthorizationCore();
 
 // Registrar ApiClients (placeholder para futura implementación)
 // builder.Services.AddScoped<IAuthApiClient, AuthApiClient>();
