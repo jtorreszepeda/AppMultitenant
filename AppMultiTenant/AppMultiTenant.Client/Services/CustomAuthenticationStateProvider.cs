@@ -1,5 +1,4 @@
 using System.IdentityModel.Tokens.Jwt;
-using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text.Json;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -13,7 +12,6 @@ namespace AppMultiTenant.Client.Services
     public class CustomAuthenticationStateProvider : AuthenticationStateProvider
     {
         private readonly IJSRuntime _jsRuntime;
-        private readonly HttpClient _httpClient;
         private readonly ILogger<CustomAuthenticationStateProvider> _logger;
         private const string AuthTokenKey = "authToken";
         private const string UserKey = "authUser";
@@ -25,15 +23,12 @@ namespace AppMultiTenant.Client.Services
         /// Constructor del proveedor de estado de autenticación personalizado
         /// </summary>
         /// <param name="jsRuntime">Servicio JS Runtime para acceder al localStorage</param>
-        /// <param name="httpClient">Cliente HTTP para comunicarse con la API</param>
         /// <param name="logger">Logger para registro de eventos</param>
         public CustomAuthenticationStateProvider(
             IJSRuntime jsRuntime,
-            HttpClient httpClient,
             ILogger<CustomAuthenticationStateProvider> logger)
         {
             _jsRuntime = jsRuntime;
-            _httpClient = httpClient;
             _logger = logger;
         }
 
@@ -91,8 +86,8 @@ namespace AppMultiTenant.Client.Services
             await _jsRuntime.InvokeVoidAsync("localStorage.setItem", AuthTokenKey, token);
             await _jsRuntime.InvokeVoidAsync("localStorage.setItem", UserKey, JsonSerializer.Serialize(user));
 
-            // Añade el token a las solicitudes HTTP
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            // Nota: Ya no es necesario configurar manualmente el HttpClient
+            // El AuthTokenHandler se encargará de adjuntar el token a las solicitudes
 
             // Crea y notifica el nuevo estado de autenticación
             var identity = GetClaimsIdentity(token);
@@ -110,7 +105,9 @@ namespace AppMultiTenant.Client.Services
         public async Task LogoutAsync()
         {
             await ClearAuthDataAsync();
-            _httpClient.DefaultRequestHeaders.Authorization = null;
+
+            // Nota: Ya no es necesario limpiar manualmente el HttpClient
+            // El AuthTokenHandler se encargará de no adjuntar ningún token al localStorage estar vacío
 
             // Notifica la salida
             _cachedAuthState = new AuthenticationState(Anonymous);

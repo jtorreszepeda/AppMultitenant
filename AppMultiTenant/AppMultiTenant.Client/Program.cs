@@ -11,12 +11,33 @@ builder.Services.AddRazorComponents();
 // Añadir servicios de MudBlazor
 builder.Services.AddMudServices();
 
-// Configuración básica para HttpClient
-builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.Configuration["ApiBaseUrl"] ?? builder.Configuration["ApiSettings:BaseUrl"] ?? "https://localhost:7001") });
+// Registrar el AuthTokenHandler
+builder.Services.AddTransient<AuthTokenHandler>();
+
+// Configurar HttpClient con el AuthTokenHandler
+builder.Services.AddScoped(sp => 
+{
+    // Obtener el handler para adjuntar el token JWT
+    var authTokenHandler = sp.GetRequiredService<AuthTokenHandler>();
+    
+    // Configurar el InnerHandler para el DelegatingHandler
+    authTokenHandler.InnerHandler = new HttpClientHandler();
+    
+    // Crear el HttpClient con el handler configurado
+    var httpClient = new HttpClient(authTokenHandler)
+    {
+        BaseAddress = new Uri(builder.Configuration["ApiBaseUrl"] ?? 
+                              builder.Configuration["ApiSettings:BaseUrl"] ?? 
+                              "https://localhost:7001")
+    };
+    
+    return httpClient;
+});
 
 // Registrar servicios para autenticación
 builder.Services.AddScoped<CustomAuthenticationStateProvider>();
-builder.Services.AddScoped<AuthenticationStateProvider>(provider => provider.GetRequiredService<CustomAuthenticationStateProvider>());
+builder.Services.AddScoped<AuthenticationStateProvider>(provider => 
+    provider.GetRequiredService<CustomAuthenticationStateProvider>());
 builder.Services.AddAuthorizationCore();
 
 // Registrar servicios de la aplicación

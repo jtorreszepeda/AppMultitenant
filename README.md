@@ -439,3 +439,9 @@ Avances recientes en el desarrollo del cliente Blazor WebAssembly:
   - Opciones específicas para SuperAdmin
   - Opciones específicas para TenantAdmin
   - Secciones dinámicas basadas en los permisos del usuario
+- Implementación de interceptor HTTP para autenticación:
+  - AuthTokenHandler como DelegatingHandler personalizado
+  - Adjunta automáticamente el token JWT a todas las solicitudes HTTP salientes
+  - Recupera el token del localStorage en cada solicitud
+  - Mejora la gestión de autenticación al eliminar la necesidad de configurar manualmente el token en cada solicitud
+  - Integración completa con CustomAuthenticationStateProvider
