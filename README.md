@@ -445,3 +445,9 @@ Avances recientes en el desarrollo del cliente Blazor WebAssembly:
   - Recupera el token del localStorage en cada solicitud
   - Mejora la gestión de autenticación al eliminar la necesidad de configurar manualmente el token en cada solicitud
   - Integración completa con CustomAuthenticationStateProvider
+- Implementación de clientes API para comunicación con el backend:
+  - ApiClientBase como clase base abstracta con funcionalidad común para HTTP
+  - Clientes específicos para cada área funcional: AuthApiClient, UserApiClient, RoleApiClient, TenantApiClient, SectionApiClient
+  - Encapsulamiento completo de llamadas HTTP con manejo de errores y logging
+  - DTOs para intercambio de datos tipados entre frontend y backend
+  - Integración con el sistema de inyección de dependencias

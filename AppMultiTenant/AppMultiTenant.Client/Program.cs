@@ -43,11 +43,12 @@ builder.Services.AddAuthorizationCore();
 // Registrar servicios de la aplicación
 builder.Services.AddScoped<ISectionService, SectionService>();
 
-// Registrar ApiClients (placeholder para futura implementación)
-// builder.Services.AddScoped<IAuthApiClient, AuthApiClient>();
-// builder.Services.AddScoped<IUserApiClient, UserApiClient>();
-// builder.Services.AddScoped<IRoleApiClient, RoleApiClient>();
-// builder.Services.AddScoped<ITenantApiClient, TenantApiClient>();
+// Registrar ApiClients
+builder.Services.AddScoped<IAuthApiClient, AuthApiClient>();
+builder.Services.AddScoped<IUserApiClient, UserApiClient>();
+builder.Services.AddScoped<IRoleApiClient, RoleApiClient>();
+builder.Services.AddScoped<ITenantApiClient, TenantApiClient>();
+builder.Services.AddScoped<ISectionApiClient, SectionApiClient>();
 
 var app = builder.Build();
 
