@@ -1,5 +1,6 @@
 using AppMultiTenant.Client.Components;
 using AppMultiTenant.Client.Services;
+using AppMultiTenant.Client.ViewModels;
 using Microsoft.AspNetCore.Components.Authorization;
 using MudBlazor.Services;
 
@@ -49,6 +50,9 @@ builder.Services.AddScoped<IUserApiClient, UserApiClient>();
 builder.Services.AddScoped<IRoleApiClient, RoleApiClient>();
 builder.Services.AddScoped<ITenantApiClient, TenantApiClient>();
 builder.Services.AddScoped<ISectionApiClient, SectionApiClient>();
+
+// Registrar ViewModels
+builder.Services.AddScoped<LoginViewModel>();
 
 var app = builder.Build();
 
