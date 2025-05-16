@@ -454,7 +454,8 @@ Avances recientes en el desarrollo del cliente Blazor WebAssembly:
 - Implementación inicial del patrón MVVM:
   - ViewModelBase: Clase base que implementa INotifyPropertyChanged para notificación de cambios en propiedades
   - LoginViewModel: Primer ViewModel implementado para la autenticación de usuarios
+  - RegisterViewModel: ViewModel para el registro de nuevos usuarios en el sistema
   - Integración completa con servicios de autenticación y navegación
-  - Manejo de estado de carga y errores de autenticación
+  - Manejo de estado de carga y errores de autenticación/registro
   - Validación de datos de entrada mediante DataAnnotations
   - Registro de ViewModels en el contenedor de DI para su uso en componentes Blazor
