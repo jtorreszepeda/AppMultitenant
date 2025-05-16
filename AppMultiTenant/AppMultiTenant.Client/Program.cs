@@ -1,11 +1,15 @@
 using AppMultiTenant.Client.Components;
 using AppMultiTenant.Client.Services;
 using Microsoft.AspNetCore.Components.Authorization;
+using MudBlazor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorComponents();
+
+// Añadir servicios de MudBlazor
+builder.Services.AddMudServices();
 
 // Configuración básica para HttpClient
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.Configuration["ApiBaseUrl"] ?? builder.Configuration["ApiSettings:BaseUrl"] ?? "https://localhost:7001") });
@@ -14,6 +18,9 @@ builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.
 builder.Services.AddScoped<CustomAuthenticationStateProvider>();
 builder.Services.AddScoped<AuthenticationStateProvider>(provider => provider.GetRequiredService<CustomAuthenticationStateProvider>());
 builder.Services.AddAuthorizationCore();
+
+// Registrar servicios de la aplicación
+builder.Services.AddScoped<ISectionService, SectionService>();
 
 // Registrar ApiClients (placeholder para futura implementación)
 // builder.Services.AddScoped<IAuthApiClient, AuthApiClient>();

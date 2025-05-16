@@ -1,0 +1,64 @@
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthStateProvider
+@inject ISectionService SectionService
+
+<MudNavMenu>
+    <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">Inicio</MudNavLink>
+    
+    <AuthorizeView Roles="SuperAdmin">
+        <MudNavGroup Title="Administración Sistema" Icon="@Icons.Material.Filled.Settings" Expanded="false">
+            <MudNavLink Href="/tenants" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Business">Inquilinos</MudNavLink>
+            <MudNavLink Href="/system-settings" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Tune">Configuración</MudNavLink>
+        </MudNavGroup>
+    </AuthorizeView>
+    
+    <AuthorizeView Roles="TenantAdmin">
+        <MudNavGroup Title="Administración Inquilino" Icon="@Icons.Material.Filled.AdminPanelSettings" Expanded="false">
+            <MudNavLink Href="/users" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.People">Usuarios</MudNavLink>
+            <MudNavLink Href="/roles" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.AssignmentInd">Roles</MudNavLink>
+            <MudNavLink Href="/section-definitions" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.ViewModule">Secciones</MudNavLink>
+        </MudNavGroup>
+    </AuthorizeView>
+    
+    <AuthorizeView>
+        <MudDivider Class="my-2" />
+        <MudNavLink Href="/profile" Icon="@Icons.Material.Filled.Person">Mi Perfil</MudNavLink>
+    </AuthorizeView>
+    
+    @if (_availableSections.Any())
+    {
+        <MudDivider Class="my-2" />
+        <MudText Typo="Typo.subtitle2" Class="px-4 my-2 mud-text-secondary">Secciones</MudText>
+        
+        @foreach (var sectionItem in _availableSections)
+        {
+            <MudNavLink Href="@($"/sections/{sectionItem.Id}")" 
+                       Icon="@GetSectionIcon(sectionItem)">
+                @sectionItem.Name
+            </MudNavLink>
+        }
+    }
+</MudNavMenu>
+
+@code {
+    private List<SectionInfo> _availableSections = new();
+    
+    protected override async Task OnInitializedAsync()
+    {
+        _availableSections = await SectionService.GetAvailableSectionsAsync();
+    }
+    
+    private string GetSectionIcon(SectionInfo section)
+    {
+        if (string.IsNullOrEmpty(section.Icon))
+            return Icons.Material.Filled.TableView;
+            
+        return section.Icon switch
+        {
+            "people" => Icons.Material.Filled.People,
+            "work" => Icons.Material.Filled.Work,
+            "assessment" => Icons.Material.Filled.Assessment,
+            _ => Icons.Material.Filled.TableView
+        };
+    }
+} 

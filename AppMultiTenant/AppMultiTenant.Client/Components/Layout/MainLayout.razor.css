@@ -18,3 +18,20 @@
         right: 0.75rem;
         top: 0.5rem;
     }
+
+.mud-appbar {
+    z-index: 1200;
+}
+
+.drawer-logo {
+    padding: 1rem;
+    text-align: center;
+}
+
+.app-version {
+    position: absolute;
+    bottom: 8px;
+    left: 8px;
+    font-size: 0.8rem;
+    opacity: 0.6;
+}

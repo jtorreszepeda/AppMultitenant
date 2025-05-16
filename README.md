@@ -423,3 +423,19 @@ Se ha comenzado el desarrollo del cliente Blazor WebAssembly:
   - Integración con el sistema de autorización de Blazor
 
 La próxima fase continúa con el desarrollo del cliente Blazor WebAssembly, incluyendo los componentes de la interfaz de usuario y la implementación del patrón MVVM.
+
+Avances recientes en el desarrollo del cliente Blazor WebAssembly:
+- Integración de MudBlazor como framework de UI:
+  - Configuración de los servicios y recursos necesarios
+  - Implementación de temas y estilos básicos
+- Implementación de componentes de layout y navegación:
+  - MainLayout.razor con estructura responsiva y adaptable según estado de autenticación
+  - NavMenu.razor con opciones de navegación condicionadas por roles y permisos
+  - Implementación de lógica para mostrar/ocultar elementos según la autorización del usuario
+- Implementación de servicios de soporte para la interfaz:
+  - ISectionService y SectionService para obtener y gestionar secciones dinámicas
+  - Integración con el sistema de autenticación y autorización
+- Estructura base para la navegación adaptativa que mostrará:
+  - Opciones específicas para SuperAdmin
+  - Opciones específicas para TenantAdmin
+  - Secciones dinámicas basadas en los permisos del usuario

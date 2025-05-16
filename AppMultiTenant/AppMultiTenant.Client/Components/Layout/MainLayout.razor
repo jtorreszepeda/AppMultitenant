@@ -1,3 +1,70 @@
 ﻿@inherits LayoutComponentBase
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
-@Body
+<MudThemeProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<AuthorizeView>
+    <Authorized>
+        <MudLayout>
+            <MudAppBar Elevation="1">
+                <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
+                <MudText Typo="Typo.h6" Class="ml-3">AppMultiTenant</MudText>
+                <MudSpacer />
+                <MudMenu Icon="@Icons.Material.Filled.AccountCircle" Color="Color.Inherit" Direction="Direction.Bottom" OffsetY="true">
+                    <MudText Class="px-4 py-2">@context.User.Identity?.Name</MudText>
+                    <MudDivider />
+                    <MudMenuItem OnClick="@LogoutAsync">Logout</MudMenuItem>
+                </MudMenu>
+            </MudAppBar>
+            
+            <MudDrawer @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2">
+                <NavMenu />
+            </MudDrawer>
+            
+            <MudMainContent>
+                <MudContainer MaxWidth="MaxWidth.Large" Class="my-4 pt-4">
+                    @Body
+                </MudContainer>
+            </MudMainContent>
+        </MudLayout>
+    </Authorized>
+    <NotAuthorized>
+        <MudLayout>
+            <MudAppBar Elevation="1">
+                <MudText Typo="Typo.h6" Class="ml-3">AppMultiTenant</MudText>
+                <MudSpacer />
+            </MudAppBar>
+            
+            <MudMainContent>
+                <MudContainer MaxWidth="MaxWidth.Small" Class="d-flex justify-center mt-10">
+                    @Body
+                </MudContainer>
+            </MudMainContent>
+        </MudLayout>
+    </NotAuthorized>
+</AuthorizeView>
+
+<div id="blazor-error-ui">
+    Ha ocurrido un error.
+    <a href="" class="reload">Recargar</a>
+    <a class="dismiss">🗙</a>
+</div>
+
+@code {
+    private bool _drawerOpen = true;
+
+    private void DrawerToggle()
+    {
+        _drawerOpen = !_drawerOpen;
+    }
+
+    private async Task LogoutAsync()
+    {
+        var authStateProvider = (CustomAuthenticationStateProvider)AuthenticationStateProvider;
+        await authStateProvider.LogoutAsync();
+        NavigationManager.NavigateTo("/", true);
+    }
+}
