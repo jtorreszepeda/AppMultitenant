@@ -124,10 +124,71 @@ namespace AppMultiTenant.Client.Services
         /// <summary>
         /// Cierra la sesión del usuario actual
         /// </summary>
+        /// <returns>Tarea que representa la operación asincrónica</returns>
         public async Task LogoutAsync()
         {
             await _authStateProvider.LogoutAsync();
             Logger.LogInformation("Cierre de sesión realizado con éxito");
+        }
+
+        /// <summary>
+        /// Verifica si el usuario está autenticado actualmente
+        /// </summary>
+        /// <returns>True si hay un token válido almacenado, false en caso contrario</returns>
+        public async Task<bool> IsAuthenticatedAsync()
+        {
+            var authState = await _authStateProvider.GetAuthenticationStateAsync();
+            return authState.User.Identity?.IsAuthenticated == true;
+        }
+
+        /// <summary>
+        /// Obtiene los datos del usuario autenticado actualmente
+        /// </summary>
+        /// <returns>Datos del usuario autenticado o null si no hay sesión</returns>
+        public async Task<UserAuthData> GetCurrentUserAsync()
+        {
+            return await _authStateProvider.GetUserDataAsync<UserAuthData>();
+        }
+
+        /// <summary>
+        /// Refresca el token de autenticación si está próximo a expirar
+        /// </summary>
+        /// <returns>True si el token fue refrescado con éxito, false si no fue necesario o falló</returns>
+        public async Task<bool> RefreshTokenAsync()
+        {
+            try
+            {
+                // Solo intentar refrescar si el usuario está autenticado
+                if (!await IsAuthenticatedAsync())
+                {
+                    return false;
+                }
+
+                var response = await HttpClient.PostAsync("/api/auth/refresh-token", null);
+                
+                if (!response.IsSuccessStatusCode)
+                {
+                    Logger.LogWarning("Falló el refresco del token. Código: {StatusCode}", response.StatusCode);
+                    return false;
+                }
+
+                var refreshResponse = await response.Content.ReadFromJsonAsync<AuthResponse>(JsonOptions);
+                
+                if (refreshResponse?.IsSuccess == true && !string.IsNullOrEmpty(refreshResponse.Token))
+                {
+                    // Actualizar el estado de autenticación con el nuevo token
+                    await _authStateProvider.SetAuthenticationStateAsync(refreshResponse.Token, refreshResponse.User);
+                    Logger.LogInformation("Token refrescado con éxito");
+                    return true;
+                }
+                
+                return false;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Error durante el proceso de refresco del token");
+                return false;
+            }
         }
     }
 } 

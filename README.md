@@ -459,6 +459,13 @@ Avances recientes en el desarrollo del cliente Blazor WebAssembly:
   - Encapsulamiento completo de llamadas HTTP con manejo de errores y logging
   - DTOs para intercambio de datos tipados entre frontend y backend
   - Integración con el sistema de inyección de dependencias
+  - **Implementación completa del AuthApiClient para login/logout y gestión de tokens**:
+    - Método LoginAsync que realiza la autenticación y almacena el token JWT
+    - Método LogoutAsync para cerrar sesión y eliminar tokens
+    - Métodos IsAuthenticatedAsync y GetCurrentUserAsync para verificar estado de autenticación
+    - Método RefreshTokenAsync para renovar tokens próximos a expirar
+    - Integración directa con CustomAuthenticationStateProvider para el almacenamiento seguro de tokens
+    - Manejo de errores y respuestas inválidas durante el proceso de autenticación
 - Implementación inicial del patrón MVVM:
   - ViewModelBase: Clase base que implementa INotifyPropertyChanged para notificación de cambios en propiedades
   - LoginViewModel: Primer ViewModel implementado para la autenticación de usuarios

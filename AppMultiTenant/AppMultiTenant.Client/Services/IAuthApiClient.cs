@@ -23,6 +23,30 @@ namespace AppMultiTenant.Client.Services
         /// <param name="lastName">Apellido del usuario</param>
         /// <returns>True si el registro fue exitoso, false en caso contrario</returns>
         Task<bool> RegisterAsync(string email, string password, string confirmPassword, string firstName, string lastName);
+
+        /// <summary>
+        /// Cierra la sesión del usuario actual
+        /// </summary>
+        /// <returns>Tarea que representa la operación asincrónica</returns>
+        Task LogoutAsync();
+
+        /// <summary>
+        /// Verifica si el usuario está autenticado actualmente
+        /// </summary>
+        /// <returns>True si hay un token válido almacenado, false en caso contrario</returns>
+        Task<bool> IsAuthenticatedAsync();
+
+        /// <summary>
+        /// Obtiene los datos del usuario autenticado actualmente
+        /// </summary>
+        /// <returns>Datos del usuario autenticado o null si no hay sesión</returns>
+        Task<UserAuthData> GetCurrentUserAsync();
+
+        /// <summary>
+        /// Refresca el token de autenticación si está próximo a expirar
+        /// </summary>
+        /// <returns>True si el token fue refrescado con éxito, false si no fue necesario o falló</returns>
+        Task<bool> RefreshTokenAsync();
     }
 
     /// <summary>
