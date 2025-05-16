@@ -474,3 +474,10 @@ Avances recientes en el desarrollo del cliente Blazor WebAssembly:
   - Manejo de estado de carga y errores de autenticación/registro
   - Validación de datos de entrada mediante DataAnnotations
   - Registro de ViewModels en el contenedor de DI para su uso en componentes Blazor
+- Implementación de rutas protegidas y redirección de autenticación:
+  - Configuración del componente AuthorizeRouteView en Routes.razor para manejar la autorización a nivel de rutas
+  - Implementación del atributo [Authorize] para proteger páginas que requieren autenticación
+  - Desarrollo del componente RedirectToLogin para redirigir automáticamente a la página de login cuando un usuario no autenticado intenta acceder a páginas protegidas
+  - Gestión del parámetro returnUrl para redirigir de vuelta a la página originalmente solicitada después de un inicio de sesión exitoso
+  - Implementación de Profile.razor como ejemplo de página protegida que requiere autenticación
+  - Mejora de la experiencia de usuario mostrando indicadores visuales durante el proceso de autorización

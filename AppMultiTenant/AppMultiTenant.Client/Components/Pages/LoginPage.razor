@@ -107,28 +107,25 @@
 
     private async Task OnValidSubmit()
     {
-        bool success = await ViewModel.LoginAsync();
+        bool success = await ViewModel.LoginAsync(ReturnUrl);
         
         if (success && !string.IsNullOrEmpty(ReturnUrl))
         {
-            NavigationManager.NavigateTo(ReturnUrl);
+            // La redirección ahora se maneja directamente en el ViewModel
         }
     }
 
     private void NavigateToRegister()
     {
-        var uri = NavigationManager.GetUriWithQueryParameter("returnUrl", ReturnUrl);
-        
         if (!string.IsNullOrEmpty(TenantId))
         {
-            uri = $"/register/{TenantId}?returnUrl={Uri.EscapeDataString(ReturnUrl)}";
+            var uri = $"/register/{TenantId}?returnUrl={Uri.EscapeDataString(ReturnUrl)}";
+            NavigationManager.NavigateTo(uri);
         }
         else
         {
-            uri = $"/register?returnUrl={Uri.EscapeDataString(ReturnUrl)}";
+            ViewModel.NavigateToRegister(ReturnUrl);
         }
-        
-        NavigationManager.NavigateTo(uri);
     }
 
     protected override async Task OnInitializedAsync()

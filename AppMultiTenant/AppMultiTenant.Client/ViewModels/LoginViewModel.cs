@@ -72,8 +72,9 @@ namespace AppMultiTenant.Client.ViewModels
         /// <summary>
         /// Realiza el inicio de sesión con las credenciales ingresadas
         /// </summary>
+        /// <param name="returnUrl">URL opcional a la que redirigir después del inicio de sesión exitoso</param>
         /// <returns>Verdadero si el inicio de sesión fue exitoso, falso en caso contrario</returns>
-        public async Task<bool> LoginAsync()
+        public async Task<bool> LoginAsync(string returnUrl = null)
         {
             try
             {
@@ -86,8 +87,8 @@ namespace AppMultiTenant.Client.ViewModels
                 {
                     _logger.LogInformation("Usuario {Email} autenticado con éxito", Email);
                     
-                    // Navegar a la página principal después del inicio de sesión exitoso
-                    _navigationManager.NavigateTo("/");
+                    // Navegar a la URL de retorno después del inicio de sesión exitoso o a la página principal si no hay URL de retorno
+                    _navigationManager.NavigateTo(!string.IsNullOrEmpty(returnUrl) ? returnUrl : "/");
                     return true;
                 }
                 else
@@ -112,9 +113,17 @@ namespace AppMultiTenant.Client.ViewModels
         /// <summary>
         /// Navega a la página de registro de usuario (si está habilitada)
         /// </summary>
-        public void NavigateToRegister()
+        /// <param name="returnUrl">URL opcional a la que redirigir después del registro exitoso</param>
+        public void NavigateToRegister(string returnUrl = null)
         {
-            _navigationManager.NavigateTo("/register");
+            if (!string.IsNullOrEmpty(returnUrl))
+            {
+                _navigationManager.NavigateTo($"/register?returnUrl={Uri.EscapeDataString(returnUrl)}");
+            }
+            else
+            {
+                _navigationManager.NavigateTo("/register");
+            }
         }
     }
 } 

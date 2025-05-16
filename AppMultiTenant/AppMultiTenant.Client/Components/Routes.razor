@@ -1,5 +1,6 @@
 ﻿@using Microsoft.AspNetCore.Components.Routing
 @using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Web
 
 <Router AppAssembly="typeof(Program).Assembly">
     <Found Context="routeData">
@@ -7,17 +8,24 @@
             <NotAuthorized>
                 @if (context.User.Identity?.IsAuthenticated != true)
                 {
-                    <RedirectToLogin />
+                    <RedirectToLogin ReturnUrl="@routeData.PageType.Name" />
                 }
                 else
                 {
-                    <p class="alert alert-danger">No tienes permisos para acceder a esta página.</p>
+                    <MudContainer Class="mt-6 px-8" MaxWidth="MaxWidth.Medium">
+                        <MudPaper Elevation="3" Class="pa-4">
+                            <MudAlert Severity="Severity.Error" Variant="Variant.Filled" Icon="@Icons.Material.Filled.Lock" Class="mb-4">
+                                No tienes permisos para acceder a esta página.
+                            </MudAlert>
+                            <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/" Class="mt-2">Volver al inicio</MudButton>
+                        </MudPaper>
+                    </MudContainer>
                 }
             </NotAuthorized>
             <Authorizing>
-                <div class="d-flex justify-center mt-10">
+                <MudContainer Class="d-flex justify-center mt-10">
                     <MudProgressCircular Indeterminate="true" Size="Size.Large" />
-                </div>
+                </MudContainer>
             </Authorizing>
         </AuthorizeRouteView>
         <FocusOnNavigate RouteData="routeData" Selector="h1" />
@@ -25,8 +33,12 @@
     <NotFound>
         <PageTitle>No encontrado</PageTitle>
         <LayoutView Layout="typeof(Layout.MainLayout)">
-            <MudText Typo="Typo.h4" Class="mb-4">Lo sentimos, no hay nada en esta dirección.</MudText>
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" Link="/">Volver al inicio</MudButton>
+            <MudContainer Class="mt-6 px-8" MaxWidth="MaxWidth.Medium">
+                <MudPaper Elevation="3" Class="pa-4">
+                    <MudText Typo="Typo.h4" Class="mb-4">Lo sentimos, no hay nada en esta dirección.</MudText>
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Link="/">Volver al inicio</MudButton>
+                </MudPaper>
+            </MudContainer>
         </LayoutView>
     </NotFound>
 </Router>
@@ -40,10 +52,16 @@
     public class RedirectToLogin : ComponentBase
     {
         [Inject] private NavigationManager Navigation { get; set; }
+        
+        [Parameter] public string ReturnUrl { get; set; }
 
         protected override void OnInitialized()
         {
-            Navigation.NavigateTo($"/login?returnUrl={Uri.EscapeDataString(Navigation.Uri)}", true);
+            // Obtener la URL actual completa
+            var currentUri = Navigation.Uri;
+            
+            // Redirigir a login con la URL actual como returnUrl
+            Navigation.NavigateTo($"/login?returnUrl={Uri.EscapeDataString(currentUri)}", forceLoad: false);
         }
     }
 }

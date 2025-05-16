@@ -1,0 +1,65 @@
+@page "/profile"
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+@attribute [Authorize]
+
+<PageTitle>Mi Perfil</PageTitle>
+
+<AuthorizeView>
+    <Authorized>
+        <MudContainer MaxWidth="MaxWidth.Medium" Class="mt-6 pa-4">
+            <MudPaper Elevation="3" Class="pa-4">
+                <MudText Typo="Typo.h4" Class="mb-4">Mi Perfil</MudText>
+                
+                <MudCard Class="mb-4">
+                    <MudCardContent>
+                        <MudGrid>
+                            <MudItem xs="12" md="6">
+                                <MudText Typo="Typo.subtitle1"><strong>Nombre:</strong></MudText>
+                                <MudText>@context.User.Identity?.Name</MudText>
+                            </MudItem>
+                            
+                            <MudItem xs="12" md="6">
+                                <MudText Typo="Typo.subtitle1"><strong>Email:</strong></MudText>
+                                <MudText>@GetClaimValue(context.User, ClaimTypes.Email)</MudText>
+                            </MudItem>
+                            
+                            <MudItem xs="12" md="6">
+                                <MudText Typo="Typo.subtitle1"><strong>Inquilino:</strong></MudText>
+                                <MudText>@GetClaimValue(context.User, "tenantName")</MudText>
+                            </MudItem>
+                            
+                            <MudItem xs="12">
+                                <MudText Typo="Typo.subtitle1"><strong>Roles:</strong></MudText>
+                                <div class="d-flex flex-wrap gap-2 mt-2">
+                                    @foreach (var role in GetUserRoles(context.User))
+                                    {
+                                        <MudPaper Class="pa-2" Elevation="0" Outlined Style="background-color:var(--mud-palette-primary-lighten)">
+                                            <MudText>@role</MudText>
+                                        </MudPaper>
+                                    }
+                                </div>
+                            </MudItem>
+                        </MudGrid>
+                    </MudCardContent>
+                </MudCard>
+                
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/">Volver al inicio</MudButton>
+            </MudPaper>
+        </MudContainer>
+    </Authorized>
+</AuthorizeView>
+
+@code {
+    private string GetClaimValue(ClaimsPrincipal user, string claimType)
+    {
+        return user.Claims.FirstOrDefault(c => c.Type == claimType)?.Value ?? "No disponible";
+    }
+    
+    private IEnumerable<string> GetUserRoles(ClaimsPrincipal user)
+    {
+        var roleClaims = user.Claims.Where(c => c.Type == ClaimTypes.Role || c.Type == "role");
+        return roleClaims.Any() ? roleClaims.Select(c => c.Value) : new[] { "Usuario" };
+    }
+} 
