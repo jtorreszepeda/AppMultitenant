@@ -1,6 +1,49 @@
-﻿<Router AppAssembly="typeof(Program).Assembly">
+﻿@using Microsoft.AspNetCore.Components.Routing
+@using Microsoft.AspNetCore.Components.Authorization
+
+<Router AppAssembly="typeof(Program).Assembly">
     <Found Context="routeData">
-        <RouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)" />
+        <AuthorizeRouteView RouteData="@routeData" DefaultLayout="typeof(Layout.MainLayout)">
+            <NotAuthorized>
+                @if (context.User.Identity?.IsAuthenticated != true)
+                {
+                    <RedirectToLogin />
+                }
+                else
+                {
+                    <p class="alert alert-danger">No tienes permisos para acceder a esta página.</p>
+                }
+            </NotAuthorized>
+            <Authorizing>
+                <div class="d-flex justify-center mt-10">
+                    <MudProgressCircular Indeterminate="true" Size="Size.Large" />
+                </div>
+            </Authorizing>
+        </AuthorizeRouteView>
         <FocusOnNavigate RouteData="routeData" Selector="h1" />
     </Found>
+    <NotFound>
+        <PageTitle>No encontrado</PageTitle>
+        <LayoutView Layout="typeof(Layout.MainLayout)">
+            <MudText Typo="Typo.h4" Class="mb-4">Lo sentimos, no hay nada en esta dirección.</MudText>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" Link="/">Volver al inicio</MudButton>
+        </LayoutView>
+    </NotFound>
 </Router>
+
+@code {
+    [CascadingParameter] private Task<AuthenticationState> AuthState { get; set; }
+}
+
+@* Componente interno para redireccionar al login *@
+@code {
+    public class RedirectToLogin : ComponentBase
+    {
+        [Inject] private NavigationManager Navigation { get; set; }
+
+        protected override void OnInitialized()
+        {
+            Navigation.NavigateTo($"/login?returnUrl={Uri.EscapeDataString(Navigation.Uri)}", true);
+        }
+    }
+}
