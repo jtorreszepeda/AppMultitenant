@@ -437,10 +437,12 @@ Avances recientes en el desarrollo del cliente Blazor WebAssembly:
   - Integración con el sistema de autenticación y autorización
 - Implementación de componentes de autenticación:
   - LoginPage.razor como componente de inicio de sesión integrado con LoginViewModel
-  - Soporte para multi-inquilino con parámetro de ruta para el ID del inquilino (/login/{TenantId})
+  - RegisterPage.razor como componente de registro de usuarios integrado con RegisterViewModel
+  - Soporte para multi-inquilino con parámetro de ruta para el ID del inquilino (/login/{TenantId}, /register/{TenantId})
   - Manejo de redirecciones mediante parámetro returnUrl para mejorar la experiencia de usuario
-  - Validación de formularios y presentación de errores de autenticación
+  - Validación de formularios y presentación de errores de autenticación/registro
   - Detección automática de usuarios ya autenticados para evitar inicios de sesión innecesarios
+  - Flujo de navegación entre componentes de login y registro para mejorar la experiencia de usuario
 - Estructura base para la navegación adaptativa que mostrará:
   - Opciones específicas para SuperAdmin
   - Opciones específicas para TenantAdmin

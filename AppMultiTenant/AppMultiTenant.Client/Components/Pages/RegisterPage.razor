@@ -1,0 +1,191 @@
+@page "/register"
+@page "/register/{TenantId}"
+@using AppMultiTenant.Client.ViewModels
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.WebUtilities
+@layout AppMultiTenant.Client.Components.Layout.MainLayout
+@inject RegisterViewModel ViewModel
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthStateProvider
+@attribute [AllowAnonymous]
+
+<PageTitle>Registro de Usuario - AppMultiTenant</PageTitle>
+
+<MudPaper Class="pa-4" Width="100%" MaxWidth="500px" Elevation="3">
+    <MudText Typo="Typo.h4" Align="Align.Center" Class="mb-4">Registro de Usuario</MudText>
+    
+    @if (!string.IsNullOrEmpty(ViewModel.ErrorMessage))
+    {
+        <MudAlert Severity="Severity.Error" Class="mb-4">@ViewModel.ErrorMessage</MudAlert>
+    }
+    
+    @if (ViewModel.RegistrationSuccess)
+    {
+        <MudAlert Severity="Severity.Success" Class="mb-4">
+            Registro completado con éxito. Ahora puedes iniciar sesión.
+        </MudAlert>
+        
+        <MudButton OnClick="ViewModel.NavigateToLogin"
+                   Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   FullWidth="true"
+                   Size="Size.Large"
+                   Class="mb-3">
+            Ir a Iniciar Sesión
+        </MudButton>
+    }
+    else
+    {
+        @if (!string.IsNullOrEmpty(TenantId))
+        {
+            <MudAlert Severity="Severity.Info" Class="mb-4">Registrando en el inquilino: @TenantId</MudAlert>
+        }
+        
+        <EditForm Model="ViewModel" OnValidSubmit="OnValidSubmit">
+            <DataAnnotationsValidator />
+            
+            <MudCard>
+                <MudCardContent>
+                    <MudTextField Label="Email"
+                                  @bind-Value="ViewModel.Email"
+                                  For="@(() => ViewModel.Email)"
+                                  InputType="InputType.Email"
+                                  Variant="Variant.Outlined"
+                                  Class="mb-3"
+                                  Required="true"
+                                  RequiredError="El email es obligatorio"
+                                  Disabled="@ViewModel.IsLoading" />
+                    
+                    <MudTextField Label="Nombre"
+                                  @bind-Value="ViewModel.FirstName"
+                                  For="@(() => ViewModel.FirstName)"
+                                  InputType="InputType.Text"
+                                  Variant="Variant.Outlined"
+                                  Class="mb-3"
+                                  Required="true"
+                                  RequiredError="El nombre es obligatorio"
+                                  Disabled="@ViewModel.IsLoading" />
+                    
+                    <MudTextField Label="Apellido"
+                                  @bind-Value="ViewModel.LastName"
+                                  For="@(() => ViewModel.LastName)"
+                                  InputType="InputType.Text"
+                                  Variant="Variant.Outlined"
+                                  Class="mb-3"
+                                  Required="true"
+                                  RequiredError="El apellido es obligatorio"
+                                  Disabled="@ViewModel.IsLoading" />
+                    
+                    <MudTextField Label="Contraseña"
+                                  @bind-Value="ViewModel.Password"
+                                  For="@(() => ViewModel.Password)"
+                                  InputType="InputType.Password"
+                                  Variant="Variant.Outlined"
+                                  Class="mb-3"
+                                  Required="true"
+                                  RequiredError="La contraseña es obligatoria"
+                                  Disabled="@ViewModel.IsLoading" />
+                    
+                    <MudTextField Label="Confirmar Contraseña"
+                                  @bind-Value="ViewModel.ConfirmPassword"
+                                  For="@(() => ViewModel.ConfirmPassword)"
+                                  InputType="InputType.Password"
+                                  Variant="Variant.Outlined"
+                                  Class="mb-3"
+                                  Required="true"
+                                  RequiredError="La confirmación de contraseña es obligatoria"
+                                  Disabled="@ViewModel.IsLoading" />
+                </MudCardContent>
+                
+                <MudCardActions Class="pb-4 px-4 d-flex flex-column">
+                    <MudButton ButtonType="ButtonType.Submit"
+                               Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               FullWidth="true"
+                               Size="Size.Large"
+                               Class="mb-2"
+                               Disabled="@ViewModel.IsLoading">
+                        @if (ViewModel.IsLoading)
+                        {
+                            <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                            <MudText Class="ms-2">Registrando...</MudText>
+                        }
+                        else
+                        {
+                            <MudText>Registrarse</MudText>
+                        }
+                    </MudButton>
+                    
+                    <MudButton OnClick="NavigateToLogin"
+                               Variant="Variant.Text"
+                               Color="Color.Secondary"
+                               FullWidth="true"
+                               Class="ml-auto"
+                               Disabled="@ViewModel.IsLoading">
+                        ¿Ya tienes cuenta? Inicia sesión
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </EditForm>
+    }
+</MudPaper>
+
+@code {
+    // Parámetro opcional para el ID del inquilino
+    [Parameter]
+    public string TenantId { get; set; }
+    
+    // Parámetro para la URL de retorno después de iniciar sesión
+    private string ReturnUrl { get; set; }
+
+    private async Task OnValidSubmit()
+    {
+        await ViewModel.RegisterAsync();
+        
+        // No redireccionamos automáticamente, mostramos el mensaje de éxito y un botón
+        // para ir a la página de login
+    }
+
+    private void NavigateToLogin()
+    {
+        var uri = "/login";
+        
+        if (!string.IsNullOrEmpty(TenantId))
+        {
+            uri = $"/login/{TenantId}";
+        }
+        
+        if (!string.IsNullOrEmpty(ReturnUrl))
+        {
+            // Construimos la URL con el parámetro de consulta manualmente
+            uri = $"{uri}?returnUrl={Uri.EscapeDataString(ReturnUrl)}";
+        }
+        
+        NavigationManager.NavigateTo(uri);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Intentar obtener el parámetro returnUrl de la URL
+        var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
+        
+        if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("returnUrl", out var returnUrl))
+        {
+            ReturnUrl = returnUrl;
+        }
+        else
+        {
+            ReturnUrl = "/";
+        }
+        
+        // Si el usuario ya está autenticado, redirige a la página principal o a returnUrl
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        
+        if (authState.User.Identity != null && authState.User.Identity.IsAuthenticated)
+        {
+            NavigationManager.NavigateTo(ReturnUrl);
+        }
+    }
+} 
