@@ -1,0 +1,16 @@
+<MudNavMenu>
+    <MudText Typo="Typo.subtitle2" Color="Color.Primary" Class="ml-4 my-3">Administración</MudText>
+    <MudDivider Class="mb-1" />
+    <MudNavLink Href="/" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Dashboard">Dashboard</MudNavLink>
+    <MudNavLink Href="/users" Icon="@Icons.Material.Filled.Person">Usuarios</MudNavLink>
+    <MudNavLink Href="/roles" Icon="@Icons.Material.Filled.Security">Roles</MudNavLink>
+    <MudNavLink Href="/sectiondefinitions" Icon="@Icons.Material.Filled.ViewModule">Definición de Secciones</MudNavLink>
+    
+    <MudText Typo="Typo.subtitle2" Color="Color.Primary" Class="ml-4 my-3 mt-4">Secciones</MudText>
+    <MudDivider Class="mb-1" />
+    @* Aquí se agregarán dinámicamente las secciones personalizadas *@
+    
+    <MudText Typo="Typo.subtitle2" Color="Color.Primary" Class="ml-4 my-3 mt-4">Sistema</MudText>
+    <MudDivider Class="mb-1" />
+    <MudNavLink Href="/systemadmin/tenants" Icon="@Icons.Material.Filled.Business">Gestión de Inquilinos</MudNavLink>
+</MudNavMenu> 
