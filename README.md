@@ -418,6 +418,7 @@ Según la lista de tareas, el proyecto se encuentra en las siguientes fases:
 ### Frontend (En Desarrollo):
 - Configuración inicial del proyecto Blazor WebAssembly
 - Implementación de MudBlazor como biblioteca de componentes UI
+- Configuración del HttpClient en Program.cs para la comunicación con la API del backend
 - Implementación del dashboard profesional en la página principal:
   - Tarjetas de estadísticas para usuarios, roles y secciones
   - Sección de actividad reciente

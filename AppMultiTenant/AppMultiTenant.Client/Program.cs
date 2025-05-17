@@ -9,8 +9,12 @@ builder.Services.AddRazorComponents();
 // Configuración de MudBlazor
 builder.Services.AddMudServices();
 
-// Configuración básica para HttpClient
-builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.Configuration["ApiBaseUrl"] ?? builder.Configuration["ApiSettings:BaseUrl"] ?? "https://localhost:7001") });
+// Configuración de HttpClient para la API
+var apiSettings = builder.Configuration.GetSection("ApiSettings");
+var apiBaseUrl = apiSettings["BaseUrl"] ?? "https://localhost:7291";
+
+// Registrar HttpClient con URL base configurada
+builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(apiBaseUrl) });
 
 // Registrar servicios para autenticación (placeholder para futura implementación)
 // builder.Services.AddScoped<CustomAuthenticationStateProvider>();
