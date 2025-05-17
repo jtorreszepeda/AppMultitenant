@@ -419,6 +419,12 @@ Según la lista de tareas, el proyecto se encuentra en las siguientes fases:
 - Configuración inicial del proyecto Blazor WebAssembly
 - Implementación de MudBlazor como biblioteca de componentes UI
 - Configuración del HttpClient en Program.cs para la comunicación con la API del backend
+- Implementación del sistema de autenticación basado en JWT:
+  - CustomAuthenticationStateProvider para gestionar tokens JWT
+  - Almacenamiento seguro de tokens en localStorage del navegador
+  - Integración con el sistema de autorización de Blazor
+  - Configuración de rutas protegidas con AuthorizeRouteView
+  - Redirección automática al login para usuarios no autenticados
 - Implementación del dashboard profesional en la página principal:
   - Tarjetas de estadísticas para usuarios, roles y secciones
   - Sección de actividad reciente

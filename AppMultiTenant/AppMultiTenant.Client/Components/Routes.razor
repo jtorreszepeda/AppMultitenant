@@ -1,6 +1,45 @@
-﻿<Router AppAssembly="typeof(Program).Assembly">
-    <Found Context="routeData">
-        <RouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)" />
-        <FocusOnNavigate RouteData="routeData" Selector="h1" />
-    </Found>
-</Router>
+﻿<CascadingAuthenticationState>
+    <Router AppAssembly="typeof(Program).Assembly">
+        <Found Context="routeData">
+            <AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)">
+                <NotAuthorized Context="context">
+                    @if (context.User.Identity?.IsAuthenticated != true)
+                    {
+                        <RedirectToLogin />
+                    }
+                    else
+                    {
+                        <p>No está autorizado para acceder a esta página.</p>
+                    }
+                </NotAuthorized>
+                <Authorizing>
+                    <div class="d-flex justify-center mt-6">
+                        <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+                    </div>
+                </Authorizing>
+            </AuthorizeRouteView>
+            <FocusOnNavigate RouteData="routeData" Selector="h1" />
+        </Found>
+        <NotFound>
+            <PageTitle>No encontrado</PageTitle>
+            <LayoutView Layout="typeof(Layout.MainLayout)">
+                <MudText Typo="Typo.h3" Class="mb-4">Lo sentimos, no se encuentra la página solicitada</MudText>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" Link="/">Volver al inicio</MudButton>
+            </LayoutView>
+        </NotFound>
+    </Router>
+</CascadingAuthenticationState>
+
+@code {
+    // Componente interno para redireccionar al login
+    private class RedirectToLogin : ComponentBase
+    {
+        [Inject]
+        private NavigationManager Navigation { get; set; }
+
+        protected override void OnInitialized()
+        {
+            Navigation.NavigateTo("/login", forceLoad: false);
+        }
+    }
+}
