@@ -1,6 +1,7 @@
 using AppMultiTenant.Client.Components;
 using AppMultiTenant.Client.Services;
 using AppMultiTenant.Client.State;
+using AppMultiTenant.Client.ViewModels;
 using Microsoft.AspNetCore.Components.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -36,6 +37,13 @@ builder.Services.AddScoped<IUserApiClient, UserApiClient>();
 builder.Services.AddScoped<IRoleApiClient, RoleApiClient>();
 builder.Services.AddScoped<ITenantApiClient, TenantApiClient>();
 builder.Services.AddScoped<ISectionApiClient, SectionApiClient>();
+
+// Registrar ViewModels
+builder.Services.AddScoped<LoginViewModel>();
+builder.Services.AddScoped<RegisterViewModel>();
+builder.Services.AddScoped<UserListViewModel>();
+builder.Services.AddScoped<CreateUserViewModel>();
+builder.Services.AddScoped<EditUserViewModel>();
 
 var app = builder.Build();
 

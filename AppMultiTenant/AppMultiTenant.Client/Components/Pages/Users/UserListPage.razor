@@ -1,0 +1,257 @@
+@page "/users"
+@using AppMultiTenant.Client.ViewModels
+@using AppMultiTenant.Client.Services
+@using System.Threading
+@inject UserListViewModel ViewModel
+@inject NavigationManager NavigationManager
+
+<PageTitle>Gestión de Usuarios</PageTitle>
+
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Usuarios</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a href="/">Inicio</a></li>
+        <li class="breadcrumb-item active">Usuarios</li>
+    </ol>
+
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <div>
+                <i class="fas fa-users me-1"></i>
+                Lista de Usuarios
+            </div>
+            <div>
+                <a href="/users/create" class="btn btn-primary btn-sm">
+                    <i class="fas fa-plus me-1"></i> Nuevo Usuario
+                </a>
+            </div>
+        </div>
+        <div class="card-body">
+            <!-- Filtros y búsqueda -->
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Buscar usuarios..." 
+                               @bind="ViewModel.SearchTerm" @bind:event="oninput" @onkeyup="HandleSearchKeyUp" />
+                        <button class="btn btn-outline-secondary" type="button" @onclick="SearchUsers">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-6 text-end">
+                    <div class="form-check form-switch d-inline-block me-2">
+                        <input class="form-check-input" type="checkbox" id="includeInactive" 
+                               checked="@ViewModel.IncludeInactive" @onchange="ToggleIncludeInactive" />
+                        <label class="form-check-label" for="includeInactive">Incluir inactivos</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mensaje de error -->
+            @if (!string.IsNullOrEmpty(ViewModel.ErrorMessage))
+            {
+                <div class="alert alert-danger">@ViewModel.ErrorMessage</div>
+            }
+
+            <!-- Indicador de carga -->
+            @if (ViewModel.IsLoading)
+            {
+                <div class="d-flex justify-content-center my-3">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Cargando...</span>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <!-- Tabla de usuarios -->
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Nombre de Usuario</th>
+                                <th>Correo Electrónico</th>
+                                <th>Nombre Completo</th>
+                                <th>Estado</th>
+                                <th>Roles</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (ViewModel.Users.Count == 0)
+                            {
+                                <tr>
+                                    <td colspan="6" class="text-center">No se encontraron usuarios.</td>
+                                </tr>
+                            }
+                            else
+                            {
+                                @foreach (var user in ViewModel.Users)
+                                {
+                                    <tr>
+                                        <td>@user.UserName</td>
+                                        <td>@user.Email</td>
+                                        <td>@user.FullName</td>
+                                        <td>
+                                            @if (user.IsActive)
+                                            {
+                                                <span class="badge bg-success">Activo</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-danger">Inactivo</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (user.Roles.Count > 0)
+                                            {
+                                                @foreach (var role in user.Roles)
+                                                {
+                                                    <span class="badge bg-info me-1">@role</span>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">Sin roles</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <a href="@($"/users/edit/{user.Id}")" class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                @if (user.IsActive)
+                                                {
+                                                    <button @onclick="() => DeactivateUser(user.Id)" class="btn btn-sm btn-outline-danger">
+                                                        <i class="fas fa-user-slash"></i>
+                                                    </button>
+                                                }
+                                                else
+                                                {
+                                                    <button @onclick="() => ActivateUser(user.Id)" class="btn btn-sm btn-outline-success">
+                                                        <i class="fas fa-user-check"></i>
+                                                    </button>
+                                                }
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Paginación -->
+                @if (ViewModel.TotalPages > 1)
+                {
+                    <nav aria-label="Navegación de páginas">
+                        <ul class="pagination justify-content-center">
+                            <!-- Botón Anterior -->
+                            <li class="page-item @(ViewModel.CurrentPage == 1 ? "disabled" : "")">
+                                <button class="page-link" @onclick="() => NavigateToPage(ViewModel.CurrentPage - 1)" aria-label="Anterior">
+                                    <span aria-hidden="true">&laquo;</span>
+                                </button>
+                            </li>
+
+                            <!-- Números de página -->
+                            @for (int i = GetStartPage(); i <= GetEndPage(); i++)
+                            {
+                                var pageNumber = i;
+                                <li class="page-item @(ViewModel.CurrentPage == pageNumber ? "active" : "")">
+                                    <button class="page-link" @onclick="() => NavigateToPage(pageNumber)">@pageNumber</button>
+                                </li>
+                            }
+
+                            <!-- Botón Siguiente -->
+                            <li class="page-item @(ViewModel.CurrentPage == ViewModel.TotalPages ? "disabled" : "")">
+                                <button class="page-link" @onclick="() => NavigateToPage(ViewModel.CurrentPage + 1)" aria-label="Siguiente">
+                                    <span aria-hidden="true">&raquo;</span>
+                                </button>
+                            </li>
+                        </ul>
+                    </nav>
+                }
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private Timer _searchTimer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ViewModel.LoadUsersAsync();
+    }
+
+    private void NavigateToPage(int page)
+    {
+        ViewModel.GoToPageAsync(page);
+    }
+
+    private async Task DeactivateUser(string userId)
+    {
+        await ViewModel.DeactivateUserAsync(userId);
+    }
+
+    private async Task ActivateUser(string userId)
+    {
+        await ViewModel.ActivateUserAsync(userId);
+    }
+
+    private async Task ToggleIncludeInactive()
+    {
+        await ViewModel.ToggleIncludeInactiveAsync();
+    }
+
+    private void HandleSearchKeyUp(KeyboardEventArgs e)
+    {
+        // Cancelar el timer anterior si existe
+        _searchTimer?.Dispose();
+
+        // Configurar un nuevo timer que se ejecute después de 500ms
+        _searchTimer = new Timer(async _ =>
+        {
+            await InvokeAsync(SearchUsers);
+        }, null, 500, Timeout.Infinite);
+
+        // Si el usuario presiona Enter, buscar inmediatamente
+        if (e.Key == "Enter")
+        {
+            _searchTimer?.Dispose();
+            SearchUsers();
+        }
+    }
+
+    private async Task SearchUsers()
+    {
+        // Restablece a la primera página cuando se realiza una búsqueda
+        ViewModel.CurrentPage = 1;
+        await ViewModel.LoadUsersAsync();
+    }
+
+    // Métodos auxiliares para la paginación
+    private int GetStartPage()
+    {
+        // Mostrar un máximo de 5 números de página
+        int delta = 2;
+        int start = Math.Max(1, ViewModel.CurrentPage - delta);
+        int end = Math.Min(ViewModel.TotalPages, ViewModel.CurrentPage + delta);
+
+        // Ajustar el inicio si estamos cerca del final
+        if (end - start < 2 * delta)
+        {
+            start = Math.Max(1, end - 2 * delta);
+        }
+
+        return start;
+    }
+
+    private int GetEndPage()
+    {
+        int delta = 2;
+        int start = GetStartPage();
+        int end = Math.Min(ViewModel.TotalPages, start + 2 * delta);
+        return end;
+    }
+} 
