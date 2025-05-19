@@ -1,15 +1,11 @@
 using AppMultiTenant.Client.Components;
 using AppMultiTenant.Client.State;
 using Microsoft.AspNetCore.Components.Authorization;
-using MudBlazor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorComponents();
-
-// Configuración de MudBlazor
-builder.Services.AddMudServices();
 
 // Configuración de HttpClient para la API
 var apiSettings = builder.Configuration.GetSection("ApiSettings");

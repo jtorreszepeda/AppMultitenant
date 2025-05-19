@@ -417,7 +417,7 @@ Según la lista de tareas, el proyecto se encuentra en las siguientes fases:
 
 ### Frontend (En Desarrollo):
 - Configuración inicial del proyecto Blazor WebAssembly
-- Implementación de MudBlazor como biblioteca de componentes UI
+- Implementación de CSS personalizado para los componentes UI
 - Configuración del HttpClient en Program.cs para la comunicación con la API del backend
 - Implementación del sistema de autenticación basado en JWT:
   - CustomAuthenticationStateProvider para gestionar tokens JWT

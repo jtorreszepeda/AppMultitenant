@@ -1,34 +1,59 @@
 @using Microsoft.AspNetCore.Components
 @inject NavigationManager NavigationManager
 
-<MudNavMenu>
-    <MudText Typo="Typo.subtitle2" Color="Color.Primary" Class="ml-4 my-3">Administración</MudText>
-    <MudDivider Class="mb-1" />
-    <MudNavLink Href="/" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Dashboard">Dashboard</MudNavLink>
+<nav class="nav-menu">
+    <div class="section-title">Administración</div>
+    <hr class="divider" />
+    <div class="nav-item">
+        <NavLink href="/" Match="NavLinkMatch.All" class="nav-link">
+            <span class="nav-icon">📊</span>
+            <span>Dashboard</span>
+        </NavLink>
+    </div>
     
     <AuthorizeView Roles="SystemAdmin,TenantAdmin">
-        <MudNavLink Href="/users" Icon="@Icons.Material.Filled.Person">Usuarios</MudNavLink>
+        <div class="nav-item">
+            <NavLink href="/users" class="nav-link">
+                <span class="nav-icon">👤</span>
+                <span>Usuarios</span>
+            </NavLink>
+        </div>
     </AuthorizeView>
     
     <AuthorizeView Roles="SystemAdmin,TenantAdmin">
-        <MudNavLink Href="/roles" Icon="@Icons.Material.Filled.Security">Roles</MudNavLink>
+        <div class="nav-item">
+            <NavLink href="/roles" class="nav-link">
+                <span class="nav-icon">🔒</span>
+                <span>Roles</span>
+            </NavLink>
+        </div>
     </AuthorizeView>
     
     <AuthorizeView Roles="SystemAdmin,TenantAdmin">
-        <MudNavLink Href="/sectiondefinitions" Icon="@Icons.Material.Filled.ViewModule">Definición de Secciones</MudNavLink>
+        <div class="nav-item">
+            <NavLink href="/sectiondefinitions" class="nav-link">
+                <span class="nav-icon">📋</span>
+                <span>Definición de Secciones</span>
+            </NavLink>
+        </div>
     </AuthorizeView>
     
-    <MudText Typo="Typo.subtitle2" Color="Color.Primary" Class="ml-4 my-3 mt-4">Secciones</MudText>
-    <MudDivider Class="mb-1" />
+    <div class="section-title mt-4">Secciones</div>
+    <hr class="divider" />
     @* Aquí se agregarán dinámicamente las secciones personalizadas *@
     <DynamicSectionNavItems />
     
     <AuthorizeView Roles="SystemAdmin">
-        <MudText Typo="Typo.subtitle2" Color="Color.Primary" Class="ml-4 my-3 mt-4">Sistema</MudText>
-        <MudDivider Class="mb-1" />
-        <MudNavLink Href="/systemadmin/tenants" Icon="@Icons.Material.Filled.Business">Gestión de Inquilinos</MudNavLink>
+        <div class="section-title mt-4">Sistema</div>
+        <hr class="divider" />
+        <div class="nav-item">
+            <NavLink href="/systemadmin/tenants" class="nav-link">
+                <span class="nav-icon">🏢</span>
+                <span>Gestión de Inquilinos</span>
+            </NavLink>
+        </div>
     </AuthorizeView>
-</MudNavMenu>
+</nav>
 
 @code {
     // Componente que se encargará de cargar dinámicamente las secciones disponibles

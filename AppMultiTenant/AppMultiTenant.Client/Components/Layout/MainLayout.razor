@@ -3,60 +3,98 @@
 @inject NavigationManager NavigationManager
 @inject CustomAuthenticationStateProvider AuthStateProvider
 
-<MudThemeProvider />
-<MudDialogProvider />
-<MudSnackbarProvider />
-
-<AuthorizeView>
-    <Authorized>
-        <MudLayout>
-            <MudAppBar Elevation="1">
-                <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
-                <MudText Typo="Typo.h6" Class="ml-3">AppMultiTenant</MudText>
-                <MudSpacer />
-                <MudMenu Icon="@Icons.Material.Filled.Person" Color="Color.Inherit" Direction="Direction.Bottom" OffsetY="true">
-                    <MudText Typo="Typo.body2" Class="px-4 py-2">@context.User.Identity?.Name</MudText>
-                    <MudDivider />
-                    <MudMenuItem Icon="@Icons.Material.Filled.Person">Mi perfil</MudMenuItem>
-                    <MudMenuItem Icon="@Icons.Material.Filled.Settings">Configuración</MudMenuItem>
-                    <MudMenuItem Icon="@Icons.Material.Filled.Logout" OnClick="Logout">Cerrar sesión</MudMenuItem>
-                </MudMenu>
-            </MudAppBar>
-            <MudDrawer @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2">
-                <NavMenu />
-            </MudDrawer>
-            <MudMainContent>
-                <MudContainer MaxWidth="MaxWidth.Large" Class="my-4">
-                    @Body
-                </MudContainer>
-            </MudMainContent>
-        </MudLayout>
-    </Authorized>
-    <NotAuthorized>
-        <MudLayout>
-            <MudAppBar Elevation="1">
-                <MudText Typo="Typo.h6" Class="ml-3">AppMultiTenant</MudText>
-                <MudSpacer />
-            </MudAppBar>
-            <MudMainContent>
-                <MudContainer MaxWidth="MaxWidth.Small" Class="my-16 pt-16">
-                    @Body
-                </MudContainer>
-            </MudMainContent>
-        </MudLayout>
-    </NotAuthorized>
-</AuthorizeView>
+<div class="app-container">
+    <AuthorizeView>
+        <Authorized>
+            <div class="app-layout">
+                <header class="app-bar">
+                    <button class="menu-button" @onclick="DrawerToggle">
+                        <span class="menu-icon"></span>
+                    </button>
+                    <h1 class="app-title">AppMultiTenant</h1>
+                    <div class="spacer"></div>
+                    <div class="user-menu">
+                        <button class="user-menu-button" @onclick="ToggleUserMenu">
+                            <span class="user-icon"></span>
+                        </button>
+                        @if (_userMenuOpen)
+                        {
+                            <div class="user-menu-content">
+                                <div class="user-info">@context.User.Identity?.Name</div>
+                                <div class="divider"></div>
+                                <button class="menu-item" @onclick="@(() => NavigateToPerfil())">
+                                    <span class="menu-item-icon perfil-icon"></span>
+                                    <span>Mi perfil</span>
+                                </button>
+                                <button class="menu-item" @onclick="@(() => NavigateToConfig())">
+                                    <span class="menu-item-icon config-icon"></span>
+                                    <span>Configuración</span>
+                                </button>
+                                <button class="menu-item" @onclick="Logout">
+                                    <span class="menu-item-icon logout-icon"></span>
+                                    <span>Cerrar sesión</span>
+                                </button>
+                            </div>
+                        }
+                    </div>
+                </header>
+                <div class="app-content">
+                    <nav class="app-drawer @(_drawerOpen ? "open" : "closed")">
+                        <NavMenu />
+                    </nav>
+                    <main class="main-content">
+                        <div class="container">
+                            @Body
+                        </div>
+                    </main>
+                </div>
+            </div>
+        </Authorized>
+        <NotAuthorized>
+            <div class="app-layout">
+                <header class="app-bar">
+                    <h1 class="app-title">AppMultiTenant</h1>
+                    <div class="spacer"></div>
+                </header>
+                <main class="main-content">
+                    <div class="container-small">
+                        @Body
+                    </div>
+                </main>
+            </div>
+        </NotAuthorized>
+    </AuthorizeView>
+</div>
 
 @code {
     private bool _drawerOpen = true;
+    private bool _userMenuOpen = false;
 
     private void DrawerToggle()
     {
         _drawerOpen = !_drawerOpen;
     }
 
+    private void ToggleUserMenu()
+    {
+        _userMenuOpen = !_userMenuOpen;
+    }
+
+    private void NavigateToPerfil()
+    {
+        _userMenuOpen = false;
+        NavigationManager.NavigateTo("/perfil");
+    }
+
+    private void NavigateToConfig()
+    {
+        _userMenuOpen = false;
+        NavigationManager.NavigateTo("/configuracion");
+    }
+
     private async Task Logout()
     {
+        _userMenuOpen = false;
         await AuthStateProvider.MarkUserAsLoggedOut();
         NavigationManager.NavigateTo("/login");
     }

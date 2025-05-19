@@ -2,64 +2,64 @@
 
 <PageTitle>Dashboard - AppMultiTenant</PageTitle>
 
-<MudContainer MaxWidth="MaxWidth.False">
-    <MudText Typo="Typo.h4" Class="mb-4">Dashboard</MudText>
+<div class="container">
+    <h4 class="dashboard-title">Dashboard</h4>
     
-    <MudGrid>
-        <MudItem xs="12" sm="6" md="3">
-            <MudPaper Elevation="2" Class="pa-4" Style="height: 150px;">
-                <MudText Typo="Typo.subtitle1" Class="mb-2">Usuarios Activos</MudText>
-                <MudText Typo="Typo.h4">@_userCount</MudText>
-                <MudDivider Class="my-2" />
-                <MudLink Href="/users">Ver detalle</MudLink>
-            </MudPaper>
-        </MudItem>
+    <div class="grid">
+        <div class="grid-item">
+            <div class="card">
+                <p class="subtitle">Usuarios Activos</p>
+                <h4 class="stat-value">@_userCount</h4>
+                <hr class="divider" />
+                <a href="/users" class="link">Ver detalle</a>
+            </div>
+        </div>
         
-        <MudItem xs="12" sm="6" md="3">
-            <MudPaper Elevation="2" Class="pa-4" Style="height: 150px;">
-                <MudText Typo="Typo.subtitle1" Class="mb-2">Roles</MudText>
-                <MudText Typo="Typo.h4">@_roleCount</MudText>
-                <MudDivider Class="my-2" />
-                <MudLink Href="/roles">Ver detalle</MudLink>
-            </MudPaper>
-        </MudItem>
+        <div class="grid-item">
+            <div class="card">
+                <p class="subtitle">Roles</p>
+                <h4 class="stat-value">@_roleCount</h4>
+                <hr class="divider" />
+                <a href="/roles" class="link">Ver detalle</a>
+            </div>
+        </div>
         
-        <MudItem xs="12" sm="6" md="3">
-            <MudPaper Elevation="2" Class="pa-4" Style="height: 150px;">
-                <MudText Typo="Typo.subtitle1" Class="mb-2">Secciones Definidas</MudText>
-                <MudText Typo="Typo.h4">@_sectionCount</MudText>
-                <MudDivider Class="my-2" />
-                <MudLink Href="/sectiondefinitions">Ver detalle</MudLink>
-            </MudPaper>
-        </MudItem>
+        <div class="grid-item">
+            <div class="card">
+                <p class="subtitle">Secciones Definidas</p>
+                <h4 class="stat-value">@_sectionCount</h4>
+                <hr class="divider" />
+                <a href="/sectiondefinitions" class="link">Ver detalle</a>
+            </div>
+        </div>
         
-        <MudItem xs="12" sm="6" md="3">
-            <MudPaper Elevation="2" Class="pa-4" Style="height: 150px;">
-                <MudText Typo="Typo.subtitle1" Class="mb-2">Estado</MudText>
-                <MudText Typo="Typo.h4" Color="Color.Success">Activo</MudText>
-                <MudDivider Class="my-2" />
-                <span class="mud-chip mud-chip-size-small mud-chip-color-success">OK</span>
-            </MudPaper>
-        </MudItem>
-    </MudGrid>
+        <div class="grid-item">
+            <div class="card">
+                <p class="subtitle">Estado</p>
+                <h4 class="stat-value success-text">Activo</h4>
+                <hr class="divider" />
+                <span class="chip success">OK</span>
+            </div>
+        </div>
+    </div>
     
-    <MudGrid Class="mt-4">
-        <MudItem xs="12" md="8">
-            <MudPaper Elevation="2" Class="pa-4">
-                <MudText Typo="Typo.h6" Class="mb-2">Actividad Reciente</MudText>
-                <MudDivider Class="mb-4" />
+    <div class="grid mt-4">
+        <div class="grid-item-large">
+            <div class="card">
+                <h6 class="card-title">Actividad Reciente</h6>
+                <hr class="divider mb-4" />
                 
                 @if (_recentActivities.Any())
                 {
-                    <div class="mud-list">
+                    <div class="list">
                         @foreach (var activity in _recentActivities)
                         {
-                            <div class="mud-list-item">
-                                <div class="d-flex">
-                                    <MudAvatar Color="@activity.Color" Class="mr-2">@activity.Icon</MudAvatar>
+                            <div class="list-item">
+                                <div class="flex-row">
+                                    <div class="avatar @activity.ColorClass">@activity.Icon</div>
                                     <div>
-                                        <MudText Typo="Typo.body1">@activity.Description</MudText>
-                                        <MudText Typo="Typo.caption">@activity.Timestamp.ToString("g")</MudText>
+                                        <p class="body-text">@activity.Description</p>
+                                        <p class="caption-text">@activity.Timestamp.ToString("g")</p>
                                     </div>
                                 </div>
                             </div>
@@ -68,88 +68,97 @@
                 }
                 else
                 {
-                    <MudText Typo="Typo.body2" Color="Color.Secondary">No hay actividades recientes para mostrar.</MudText>
+                    <p class="secondary-text">No hay actividades recientes para mostrar.</p>
                 }
-                
-            </MudPaper>
-        </MudItem>
+            </div>
+        </div>
         
-        <MudItem xs="12" md="4">
-            <MudPaper Elevation="2" Class="pa-4">
-                <MudText Typo="Typo.h6" Class="mb-2">Acciones Rápidas</MudText>
-                <MudDivider Class="mb-4" />
+        <div class="grid-item-small">
+            <div class="card">
+                <h6 class="card-title">Acciones Rápidas</h6>
+                <hr class="divider mb-4" />
                 
-                <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.PersonAdd" Color="Color.Primary" FullWidth="true" Class="mb-2">Crear Usuario</MudButton>
-                <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Add" Color="Color.Secondary" FullWidth="true" Class="mb-2">Nueva Sección</MudButton>
-                <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Security" Color="Color.Info" FullWidth="true" Class="mb-2">Configurar Roles</MudButton>
-                <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.SettingsSuggest" Color="Color.Default" FullWidth="true">Configuración</MudButton>
-            </MudPaper>
+                <button class="button primary full-width mb-2">
+                    <span class="button-icon">👤+</span>
+                    <span>Crear Usuario</span>
+                </button>
+                <button class="button secondary full-width mb-2">
+                    <span class="button-icon">➕</span>
+                    <span>Nueva Sección</span>
+                </button>
+                <button class="button info full-width mb-2">
+                    <span class="button-icon">🔒</span>
+                    <span>Configurar Roles</span>
+                </button>
+                <button class="button default full-width">
+                    <span class="button-icon">⚙️</span>
+                    <span>Configuración</span>
+                </button>
+            </div>
             
-            <MudPaper Elevation="2" Class="pa-4 mt-4">
-                <MudText Typo="Typo.h6" Class="mb-2">Información del Sistema</MudText>
-                <MudDivider Class="mb-4" />
+            <div class="card mt-4">
+                <h6 class="card-title">Información del Sistema</h6>
+                <hr class="divider mb-4" />
                 
-                <MudText Typo="Typo.body2"><b>Inquilino:</b> @_tenantName</MudText>
-                <MudText Typo="Typo.body2"><b>Versión:</b> v1.0.0</MudText>
-                <MudText Typo="Typo.body2"><b>Último acceso:</b> @DateTime.Now.ToString("g")</MudText>
-            </MudPaper>
-        </MudItem>
-    </MudGrid>
-</MudContainer>
+                <p class="body-text"><b>Inquilino:</b> @_tenantName</p>
+                <p class="body-text"><b>Versión:</b> v1.0.0</p>
+                <p class="body-text"><b>Último acceso:</b> @DateTime.Now.ToString("g")</p>
+            </div>
+        </div>
+    </div>
+</div>
 
 @code {
-    // Datos de muestra para el dashboard (en una implementación real, se obtendrían de la API)
-    private int _userCount = 12;
-    private int _roleCount = 5;
+    // Datos de ejemplo para la demostración
+    private int _userCount = 24;
+    private int _roleCount = 6;
     private int _sectionCount = 8;
-    private string _tenantName = "Empresa Demo";
+    private string _tenantName = "Acme Corporation";
     
-    private class ActivityItem
+    private List<RecentActivity> _recentActivities = new List<RecentActivity>
     {
-        public string Description { get; set; } = "";
-        public DateTime Timestamp { get; set; }
-        public string Icon { get; set; } = "";
-        public Color Color { get; set; } = Color.Default;
-    }
-    
-    private List<ActivityItem> _recentActivities = new()
-    {
-        new ActivityItem { 
-            Description = "Usuario 'admin' inició sesión", 
-            Timestamp = DateTime.Now.AddMinutes(-15), 
-            Icon = "P", 
-            Color = Color.Primary 
+        new RecentActivity 
+        { 
+            Description = "Usuario 'jsmith' ha iniciado sesión", 
+            Timestamp = DateTime.Now.AddMinutes(-5),
+            Icon = "👤",
+            ColorClass = "avatar-primary"
         },
-        new ActivityItem { 
-            Description = "Se creó un nuevo usuario 'marketing'", 
-            Timestamp = DateTime.Now.AddHours(-2), 
-            Icon = "P", 
-            Color = Color.Secondary 
+        new RecentActivity 
+        { 
+            Description = "Se ha creado un nuevo rol 'Editor'", 
+            Timestamp = DateTime.Now.AddHours(-2),
+            Icon = "🔒",
+            ColorClass = "avatar-info"
         },
-        new ActivityItem { 
-            Description = "Se modificó el rol 'Gerentes'", 
-            Timestamp = DateTime.Now.AddHours(-5), 
-            Icon = "S", 
-            Color = Color.Info 
+        new RecentActivity 
+        { 
+            Description = "Se ha modificado la sección 'Inventario'", 
+            Timestamp = DateTime.Now.AddHours(-4),
+            Icon = "📋",
+            ColorClass = "avatar-warning"
         },
-        new ActivityItem { 
-            Description = "Se creó la sección 'Proyectos'", 
-            Timestamp = DateTime.Now.AddDays(-1), 
-            Icon = "C", 
-            Color = Color.Success 
+        new RecentActivity 
+        { 
+            Description = "Se ha agregado un nuevo usuario 'alopez'", 
+            Timestamp = DateTime.Now.AddDays(-1),
+            Icon = "👤+",
+            ColorClass = "avatar-success"
         },
-        new ActivityItem { 
-            Description = "Se añadieron 3 nuevos registros en 'Clientes'", 
-            Timestamp = DateTime.Now.AddDays(-2), 
-            Icon = "D", 
-            Color = Color.Warning 
+        new RecentActivity 
+        { 
+            Description = "Actualización de configuración completada", 
+            Timestamp = DateTime.Now.AddDays(-2),
+            Icon = "⚙️",
+            ColorClass = "avatar-secondary"
         }
     };
     
-    // En una implementación real, estos métodos obtendrían datos de la API
-    protected override async Task OnInitializedAsync()
+    private class RecentActivity
     {
-        // Aquí se llamaría a la API para obtener los datos reales
-        await Task.Delay(100); // Simulando una llamada a la API
+        public string Description { get; set; }
+        public DateTime Timestamp { get; set; }
+        public string Icon { get; set; }
+        public string ColorClass { get; set; }
     }
 }
