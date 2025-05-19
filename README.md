@@ -422,12 +422,7 @@ Según la lista de tareas, el proyecto se encuentra en las siguientes fases:
   - Implementación de `AuthTokenHandler` como `DelegatingHandler` para adjuntar automáticamente el token JWT a todas las solicitudes HTTP salientes
   - Configuración de `HttpClientFactory` para utilizar el `AuthTokenHandler`
   - Gestión de errores robusta en las solicitudes HTTP
-- Implementación del sistema de autenticación basado en JWT:
-  - CustomAuthenticationStateProvider para gestionar tokens JWT
-  - Almacenamiento seguro de tokens en localStorage del navegador
-  - Integración con el sistema de autorización de Blazor
-  - Configuración de rutas protegidas con AuthorizeRouteView
-  - Redirección automática al login para usuarios no autenticados
+- Implementación del sistema de autenticación basado en JWT:  - CustomAuthenticationStateProvider para gestionar tokens JWT  - Almacenamiento seguro de tokens en localStorage del navegador  - Integración con el sistema de autorización de Blazor  - Configuración de rutas protegidas con AuthorizeRouteView  - Redirección automática al login para usuarios no autenticados- Implementación de servicios ApiClient para comunicación con el backend:  - AuthApiClient para operaciones de autenticación y gestión de tokens  - UserApiClient para gestión de usuarios por inquilino  - RoleApiClient para gestión de roles y permisos  - TenantApiClient para operaciones de administración de inquilinos  - SectionApiClient para gestión de definiciones de secciones personalizadas  - Manejo centralizado de serialización/deserialización de datos  - Gestión de errores HTTP consistente
 - Implementación del dashboard profesional en la página principal:
   - Tarjetas de estadísticas para usuarios, roles y secciones
   - Sección de actividad reciente

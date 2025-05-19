@@ -1,4 +1,5 @@
 using AppMultiTenant.Client.Components;
+using AppMultiTenant.Client.Services;
 using AppMultiTenant.Client.State;
 using Microsoft.AspNetCore.Components.Authorization;
 
@@ -29,11 +30,12 @@ builder.Services.AddScoped<CustomAuthenticationStateProvider>();
 builder.Services.AddScoped<AuthenticationStateProvider>(provider => 
     provider.GetRequiredService<CustomAuthenticationStateProvider>());
 
-// Registrar ApiClients (placeholder para futura implementación)
-// builder.Services.AddScoped<IAuthApiClient, AuthApiClient>();
-// builder.Services.AddScoped<IUserApiClient, UserApiClient>();
-// builder.Services.AddScoped<IRoleApiClient, RoleApiClient>();
-// builder.Services.AddScoped<ITenantApiClient, TenantApiClient>();
+// Registrar ApiClients
+builder.Services.AddScoped<IAuthApiClient, AuthApiClient>();
+builder.Services.AddScoped<IUserApiClient, UserApiClient>();
+builder.Services.AddScoped<IRoleApiClient, RoleApiClient>();
+builder.Services.AddScoped<ITenantApiClient, TenantApiClient>();
+builder.Services.AddScoped<ISectionApiClient, SectionApiClient>();
 
 var app = builder.Build();
 
