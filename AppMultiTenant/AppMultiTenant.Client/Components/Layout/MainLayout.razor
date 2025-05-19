@@ -1,7 +1,9 @@
 ﻿@inherits LayoutComponentBase
 @using AppMultiTenant.Client.State
+@using AppMultiTenant.Client.Services
 @inject NavigationManager NavigationManager
 @inject CustomAuthenticationStateProvider AuthStateProvider
+@inject IAuthApiClient AuthApiClient
 
 <div class="app-container">
     <AuthorizeView>
@@ -95,7 +97,13 @@
     private async Task Logout()
     {
         _userMenuOpen = false;
+        
+        // Usar AuthApiClient para hacer logout
+        await AuthApiClient.LogoutAsync();
+        
+        // Actualizar el estado de autenticación en el AuthStateProvider
         await AuthStateProvider.MarkUserAsLoggedOut();
+        
         NavigationManager.NavigateTo("/login");
     }
 }
