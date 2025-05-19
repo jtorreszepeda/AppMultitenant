@@ -1,5 +1,4 @@
 using System.IdentityModel.Tokens.Jwt;
-using System.Net.Http.Headers;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.JSInterop;
@@ -11,15 +10,13 @@ namespace AppMultiTenant.Client.State
     /// </summary>
     public class CustomAuthenticationStateProvider : AuthenticationStateProvider
     {
-        private readonly HttpClient _httpClient;
         private readonly IJSRuntime _jsRuntime;
         private static readonly string TokenKey = "authToken";
         private static readonly string UserDataKey = "userData";
         private AuthenticationState _anonymous => new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
 
-        public CustomAuthenticationStateProvider(HttpClient httpClient, IJSRuntime jsRuntime)
+        public CustomAuthenticationStateProvider(IJSRuntime jsRuntime)
         {
-            _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
             _jsRuntime = jsRuntime ?? throw new ArgumentNullException(nameof(jsRuntime));
         }
 
@@ -31,8 +28,6 @@ namespace AppMultiTenant.Client.State
         {
             try
             {
-                // Todo: Verificar si la implementación es correcta
-
                 // Verificar si podemos acceder a JavaScript
                 // Durante el renderizado estático del servidor, debemos retornar un estado anónimo
                 var isAuthenticated = false;
@@ -56,14 +51,11 @@ namespace AppMultiTenant.Client.State
                     return _anonymous;
                 }
 
-                // Configurar el HttpClient con el token
-                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-
                 // Crear el estado de autenticación basado en las claims del token
                 var authenticatedUser = new ClaimsPrincipal(new ClaimsIdentity(ParseClaimsFromJwt(token), "jwt"));
                 return new AuthenticationState(authenticatedUser);
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 // En caso de error, eliminar el token y devolver usuario anónimo
                 try
@@ -76,7 +68,6 @@ namespace AppMultiTenant.Client.State
                     // Ignorar errores al intentar eliminar del localStorage durante renderizado servidor
                 }
 
-                _httpClient.DefaultRequestHeaders.Authorization = null;
                 return _anonymous;
             }
         }
@@ -103,8 +94,6 @@ namespace AppMultiTenant.Client.State
                 // Ignorar durante el renderizado estático
             }
 
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-
             // Crear nuevo estado de autenticación y notificar a los componentes
             var authenticatedUser = new ClaimsPrincipal(new ClaimsIdentity(ParseClaimsFromJwt(token), "jwt"));
             var authState = new AuthenticationState(authenticatedUser);
@@ -126,8 +115,6 @@ namespace AppMultiTenant.Client.State
             {
                 // Ignorar durante el renderizado estático
             }
-            
-            _httpClient.DefaultRequestHeaders.Authorization = null;
             
             // Notificar cambio de estado a anónimo
             NotifyAuthenticationStateChanged(Task.FromResult(_anonymous));

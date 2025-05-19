@@ -11,8 +11,17 @@ builder.Services.AddRazorComponents();
 var apiSettings = builder.Configuration.GetSection("ApiSettings");
 var apiBaseUrl = apiSettings["BaseUrl"] ?? "https://localhost:7291";
 
-// Registrar HttpClient con URL base configurada
-builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(apiBaseUrl) });
+// Registrar el AuthTokenHandler para agregar automáticamente JWT a las solicitudes
+builder.Services.AddScoped<AuthTokenHandler>();
+
+// Registrar HttpClient con URL base configurada y configurar con AuthTokenHandler
+builder.Services.AddHttpClient("API", client => 
+{
+    client.BaseAddress = new Uri(apiBaseUrl);
+}).AddHttpMessageHandler<AuthTokenHandler>();
+
+// Registrar HttpClient como un servicio para inyectar en componentes
+builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("API"));
 
 // Registrar servicios para autenticación
 builder.Services.AddAuthorization();

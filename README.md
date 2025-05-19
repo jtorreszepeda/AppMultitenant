@@ -418,7 +418,10 @@ Según la lista de tareas, el proyecto se encuentra en las siguientes fases:
 ### Frontend (En Desarrollo):
 - Configuración inicial del proyecto Blazor WebAssembly
 - Implementación de CSS personalizado para los componentes UI
-- Configuración del HttpClient en Program.cs para la comunicación con la API del backend
+- Configuración del HttpClient en Program.cs para la comunicación con la API del backend:
+  - Implementación de `AuthTokenHandler` como `DelegatingHandler` para adjuntar automáticamente el token JWT a todas las solicitudes HTTP salientes
+  - Configuración de `HttpClientFactory` para utilizar el `AuthTokenHandler`
+  - Gestión de errores robusta en las solicitudes HTTP
 - Implementación del sistema de autenticación basado en JWT:
   - CustomAuthenticationStateProvider para gestionar tokens JWT
   - Almacenamiento seguro de tokens en localStorage del navegador
