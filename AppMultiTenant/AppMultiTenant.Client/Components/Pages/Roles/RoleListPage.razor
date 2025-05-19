@@ -1,0 +1,250 @@
+@page "/roles"
+@using AppMultiTenant.Client.ViewModels
+@using AppMultiTenant.Client.Services
+@using System.Threading
+@using Microsoft.JSInterop
+@inject RoleListViewModel ViewModel
+@inject NavigationManager NavigationManager
+@inject IJSRuntime jsRuntime
+
+<PageTitle>Gestión de Roles</PageTitle>
+
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Roles</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a href="/">Inicio</a></li>
+        <li class="breadcrumb-item active">Roles</li>
+    </ol>
+
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <div>
+                <i class="fas fa-user-tag me-1"></i>
+                Lista de Roles
+            </div>
+            <div>
+                <a href="/roles/create" class="btn btn-primary btn-sm">
+                    <i class="fas fa-plus me-1"></i> Nuevo Rol
+                </a>
+            </div>
+        </div>
+        <div class="card-body">
+            @if (!string.IsNullOrEmpty(ViewModel.ErrorMessage))
+            {
+                <div class="alert alert-danger">@ViewModel.ErrorMessage</div>
+            }
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Buscar por nombre o descripción" 
+                               @bind="SearchTerm" @bind:event="oninput" @onkeyup="HandleSearchKeyUp" />
+                        <button class="btn btn-outline-primary" type="button" @onclick="SearchRoles">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-6 d-flex justify-content-end">
+                    <div class="btn-group">
+                        <button class="btn btn-outline-secondary" @onclick="() => ViewModel.RefreshDataAsync()">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            @if (ViewModel.IsLoading)
+            {
+                <div class="d-flex justify-content-center my-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Cargando...</span>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Descripción</th>
+                                <th>Permisos</th>
+                                <th style="width: 120px">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (ViewModel.Roles.Count == 0)
+                            {
+                                <tr>
+                                    <td colspan="4" class="text-center">No se encontraron roles</td>
+                                </tr>
+                            }
+                            else
+                            {
+                                @foreach (var role in ViewModel.Roles)
+                                {
+                                    <tr>
+                                        <td>@role.Name</td>
+                                        <td>@role.Description</td>
+                                        <td>
+                                            @if (role.Permissions != null && role.Permissions.Any())
+                                            {
+                                                <div class="d-flex flex-wrap gap-1">
+                                                    @foreach (var permission in role.Permissions.Take(3))
+                                                    {
+                                                        <span class="badge bg-secondary">@permission.Name</span>
+                                                    }
+                                                    @if (role.Permissions.Count > 3)
+                                                    {
+                                                        <span class="badge bg-info">+@(role.Permissions.Count - 3) más</span>
+                                                    }
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">Sin permisos</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <a href="@($"/roles/edit/{role.Id}")" class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <button @onclick="() => DeleteRole(role.Id)" class="btn btn-sm btn-outline-danger">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mt-3">
+                    <div>
+                        Mostrando @ViewModel.Roles.Count de @ViewModel.TotalCount roles
+                    </div>
+                    <nav>
+                        <ul class="pagination">
+                            <li class="page-item @(ViewModel.CurrentPage <= 1 ? "disabled" : "")">
+                                <button class="page-link" @onclick="() => GoToPage(ViewModel.CurrentPage - 1)" aria-label="Anterior">
+                                    <span aria-hidden="true">&laquo;</span>
+                                </button>
+                            </li>
+                            @for (int i = 1; i <= ViewModel.TotalPages; i++)
+                            {
+                                var pageNumber = i;
+                                <li class="page-item @(ViewModel.CurrentPage == pageNumber ? "active" : "")">
+                                    <button class="page-link" @onclick="() => GoToPage(pageNumber)">@pageNumber</button>
+                                </li>
+                            }
+                            <li class="page-item @(ViewModel.CurrentPage >= ViewModel.TotalPages ? "disabled" : "")">
+                                <button class="page-link" @onclick="() => GoToPage(ViewModel.CurrentPage + 1)" aria-label="Siguiente">
+                                    <span aria-hidden="true">&raquo;</span>
+                                </button>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Confirmación de Eliminación -->
+<div class="modal fade" id="deleteRoleModal" tabindex="-1" aria-labelledby="deleteRoleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteRoleModalLabel">Confirmar Eliminación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                ¿Está seguro que desea eliminar este rol? Esta acción no se puede deshacer.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger" @onclick="ConfirmDelete" data-bs-dismiss="modal">Eliminar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string SearchTerm { get; set; } = string.Empty;
+    private string RoleIdToDelete { get; set; } = string.Empty;
+    private Timer SearchTimer { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ViewModel.RefreshDataAsync();
+    }
+
+    private void HandleSearchKeyUp(KeyboardEventArgs e)
+    {
+        // Inicializamos o reseteamos el temporizador cada vez que el usuario escribe
+        SearchTimer?.Dispose();
+        
+        if (e.Key == "Enter")
+        {
+            SearchRoles();
+        }
+        else
+        {
+            // Esperamos 500ms después de que el usuario termina de escribir para buscar
+            SearchTimer = new Timer(_ => 
+            {
+                InvokeAsync(() => 
+                {
+                    ViewModel.SearchTerm = SearchTerm;
+                    ViewModel.RefreshDataAsync();
+                    StateHasChanged();
+                });
+            }, null, 500, Timeout.Infinite);
+        }
+    }
+
+    private void SearchRoles()
+    {
+        SearchTimer?.Dispose();
+        ViewModel.SearchTerm = SearchTerm;
+        ViewModel.CurrentPage = 1; // Volver a la primera página al buscar
+        ViewModel.RefreshDataAsync();
+    }
+
+    private void GoToPage(int pageNumber)
+    {
+        if (pageNumber < 1 || pageNumber > ViewModel.TotalPages)
+            return;
+
+        ViewModel.CurrentPage = pageNumber;
+        ViewModel.RefreshDataAsync();
+    }
+
+    private async Task DeleteRole(string roleId)
+    {
+        RoleIdToDelete = roleId;
+        // Mostrar modal de confirmación usando eval para simplicidad
+        await jsRuntime.InvokeVoidAsync("eval", "new bootstrap.Modal(document.getElementById('deleteRoleModal')).show()");
+    }
+
+    private async Task ConfirmDelete()
+    {
+        if (string.IsNullOrEmpty(RoleIdToDelete))
+            return;
+
+        try
+        {
+            await ViewModel.DeleteRoleAsync(RoleIdToDelete);
+            RoleIdToDelete = string.Empty;
+            await ViewModel.RefreshDataAsync();
+        }
+        catch (Exception)
+        {
+            // El error ya debería estar capturado en el ViewModel
+        }
+    }
+} 

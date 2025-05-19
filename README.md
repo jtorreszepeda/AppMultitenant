@@ -465,4 +465,14 @@ Según la lista de tareas, el proyecto se encuentra en las siguientes fases:
     - CreateUserPage.razor con formulario de creación de usuarios
     - EditUserPage.razor incluyendo interfaz para asignación de roles
   - Integración con UserApiClient para operaciones CRUD (pendiente finalizar)
-- Preparación de la estructura para futuras páginas de gestión de roles y secciones
+- Módulo de Gestión de Roles y Permisos (completado):
+  - Implementación de ViewModels:
+    - RoleListViewModel.cs para listar y filtrar roles
+    - CreateRoleViewModel.cs para la creación de nuevos roles
+    - EditRoleViewModel.cs para edición de roles y asignación de permisos
+  - Implementación de vistas Razor:
+    - RoleListPage.razor con funcionalidades de paginación, búsqueda y eliminación
+    - CreateRolePage.razor con formulario de creación de roles e interfaz para asignación de permisos
+    - EditRolePage.razor con interfaz para edición de roles y gestión de permisos
+  - Integración con RoleApiClient para operaciones CRUD y gestión de permisos
+- Preparación de la estructura para futuras páginas de gestión de secciones

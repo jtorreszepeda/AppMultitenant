@@ -104,6 +104,14 @@ namespace AppMultiTenant.Client.ViewModels
         }
 
         /// <summary>
+        /// Refresca los datos de roles
+        /// </summary>
+        public async Task RefreshDataAsync()
+        {
+            await LoadRolesAsync();
+        }
+
+        /// <summary>
         /// Carga la lista de roles desde la API
         /// </summary>
         public async Task LoadRolesAsync()

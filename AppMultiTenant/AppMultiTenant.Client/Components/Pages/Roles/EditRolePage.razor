@@ -1,0 +1,172 @@
+@page "/roles/edit/{RoleId}"
+@using AppMultiTenant.Client.ViewModels
+@using System.ComponentModel.DataAnnotations
+@inject EditRoleViewModel ViewModel
+@inject NavigationManager NavigationManager
+
+<PageTitle>Editar Rol</PageTitle>
+
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Editar Rol</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a href="/">Inicio</a></li>
+        <li class="breadcrumb-item"><a href="/roles">Roles</a></li>
+        <li class="breadcrumb-item active">Editar Rol</li>
+    </ol>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-user-edit me-1"></i>
+            Formulario de Edición de Rol
+        </div>
+        <div class="card-body">
+            @if (!string.IsNullOrEmpty(ViewModel.ErrorMessage))
+            {
+                <div class="alert alert-danger">@ViewModel.ErrorMessage</div>
+            }
+
+            @if (!string.IsNullOrEmpty(ViewModel.SuccessMessage))
+            {
+                <div class="alert alert-success">@ViewModel.SuccessMessage</div>
+            }
+
+            @if (ViewModel.IsLoading && string.IsNullOrEmpty(ViewModel.Name))
+            {
+                <div class="d-flex justify-content-center my-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Cargando...</span>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <EditForm Model="ViewModel" OnValidSubmit="HandleValidSubmit">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+
+                    <div class="form-group mb-3">
+                        <label for="name">Nombre del Rol</label>
+                        <InputText id="name" @bind-Value="ViewModel.Name" class="form-control" />
+                        <ValidationMessage For="@(() => ViewModel.Name)" />
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label for="description">Descripción</label>
+                        <InputTextArea id="description" @bind-Value="ViewModel.Description" class="form-control" rows="3" />
+                        <ValidationMessage For="@(() => ViewModel.Description)" />
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label>Permisos</label>
+                        @if (ViewModel.AvailablePermissions.Count == 0)
+                        {
+                            <p class="text-muted">Cargando permisos...</p>
+                        }
+                        else
+                        {
+                            <div class="row">
+                                @{
+                                    // Agrupamos los permisos por categoría para una mejor organización
+                                    var permissionsByCategory = ViewModel.AvailablePermissions
+                                        .GroupBy(p => string.IsNullOrEmpty(p.Category) ? "Otros" : p.Category)
+                                        .OrderBy(g => g.Key);
+                                }
+
+                                @foreach (var category in permissionsByCategory)
+                                {
+                                    <div class="col-md-6 mb-3">
+                                        <div class="card">
+                                            <div class="card-header bg-light">
+                                                <strong>@category.Key</strong>
+                                            </div>
+                                            <div class="card-body">
+                                                @foreach (var permission in category.OrderBy(p => p.Name))
+                                                {
+                                                    <div class="form-check mb-2">
+                                                        <input class="form-check-input" type="checkbox" id="permission-@permission.Id"
+                                                               checked="@SelectedPermissions.Contains(permission.Id)"
+                                                               @onchange="@(e => OnPermissionSelectionChanged(permission.Id, e.Value))" />
+                                                        <label class="form-check-label" for="permission-@permission.Id" title="@permission.Description">
+                                                            @permission.Name
+                                                        </label>
+                                                    </div>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+
+                    <div class="form-group mt-4 d-flex justify-content-between">
+                        <button type="button" class="btn btn-secondary" @onclick="NavigateToRoleList">
+                            <i class="fas fa-arrow-left me-1"></i> Volver
+                        </button>
+                        <button type="submit" class="btn btn-primary" disabled="@ViewModel.IsLoading">
+                            @if (ViewModel.IsLoading)
+                            {
+                                <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                <span>Guardando...</span>
+                            }
+                            else
+                            {
+                                <i class="fas fa-save me-1"></i>
+                                <span>Guardar</span>
+                            }
+                        </button>
+                    </div>
+                </EditForm>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string RoleId { get; set; } = string.Empty;
+
+    private HashSet<string> SelectedPermissions = new HashSet<string>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Cargamos los datos del rol y los permisos disponibles al inicializar el componente
+        await ViewModel.LoadRoleAsync(RoleId);
+        
+        // Inicializamos SelectedPermissions con los valores del ViewModel (permisos actuales del rol)
+        SelectedPermissions = new HashSet<string>(ViewModel.SelectedPermissions);
+    }
+
+    private void OnPermissionSelectionChanged(string permissionId, object isChecked)
+    {
+        if (isChecked is bool isSelected)
+        {
+            if (isSelected)
+            {
+                SelectedPermissions.Add(permissionId);
+            }
+            else
+            {
+                SelectedPermissions.Remove(permissionId);
+            }
+
+            // Actualizar el SelectedPermissions del ViewModel
+            ViewModel.SelectedPermissions = SelectedPermissions.ToList();
+        }
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        var updatedRole = await ViewModel.UpdateRoleAsync();
+        if (updatedRole != null)
+        {
+            // Si la actualización fue exitosa, mostrar mensaje de éxito
+            ViewModel.SuccessMessage = "Rol actualizado exitosamente";
+        }
+    }
+
+    private void NavigateToRoleList()
+    {
+        NavigationManager.NavigateTo("/roles");
+    }
+} 
