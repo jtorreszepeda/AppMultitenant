@@ -1,0 +1,177 @@
+@page "/users/edit/{UserId}"
+@using AppMultiTenant.Client.ViewModels
+@using System.ComponentModel.DataAnnotations
+@inject EditUserViewModel ViewModel
+@inject NavigationManager NavigationManager
+
+<PageTitle>Editar Usuario</PageTitle>
+
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Editar Usuario</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a href="/">Inicio</a></li>
+        <li class="breadcrumb-item"><a href="/users">Usuarios</a></li>
+        <li class="breadcrumb-item active">Editar Usuario</li>
+    </ol>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-user-edit me-1"></i>
+            Formulario de Edición de Usuario
+        </div>
+        <div class="card-body">
+            @if (!string.IsNullOrEmpty(ViewModel.ErrorMessage))
+            {
+                <div class="alert alert-danger">@ViewModel.ErrorMessage</div>
+            }
+
+            @if (!string.IsNullOrEmpty(ViewModel.SuccessMessage))
+            {
+                <div class="alert alert-success">@ViewModel.SuccessMessage</div>
+            }
+
+            @if (ViewModel.IsLoading && string.IsNullOrEmpty(ViewModel.UserName))
+            {
+                <div class="d-flex justify-content-center my-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Cargando...</span>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <EditForm Model="ViewModel" OnValidSubmit="HandleValidSubmit">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+
+                    <div class="form-group mb-3">
+                        <label for="userName">Nombre de Usuario</label>
+                        <InputText id="userName" @bind-Value="ViewModel.UserName" class="form-control" />
+                        <ValidationMessage For="@(() => ViewModel.UserName)" />
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label for="email">Email</label>
+                        <InputText id="email" @bind-Value="ViewModel.Email" type="email" class="form-control" />
+                        <ValidationMessage For="@(() => ViewModel.Email)" />
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label for="fullName">Nombre Completo</label>
+                        <InputText id="fullName" @bind-Value="ViewModel.FullName" class="form-control" />
+                        <ValidationMessage For="@(() => ViewModel.FullName)" />
+                    </div>
+
+                    <div class="form-check form-switch mb-3">
+                        <InputCheckbox id="isActive" @bind-Value="ViewModel.IsActive" class="form-check-input" />
+                        <label class="form-check-label" for="isActive">Usuario Activo</label>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label for="newPassword">Nueva Contraseña (Dejar en blanco para no cambiar)</label>
+                        <InputText id="newPassword" @bind-Value="ViewModel.NewPassword" type="password" class="form-control" />
+                        <ValidationMessage For="@(() => ViewModel.NewPassword)" />
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label for="confirmNewPassword">Confirmar Nueva Contraseña</label>
+                        <InputText id="confirmNewPassword" @bind-Value="ViewModel.ConfirmNewPassword" type="password" class="form-control" />
+                        <ValidationMessage For="@(() => ViewModel.ConfirmNewPassword)" />
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label>Roles</label>
+                        @if (ViewModel.AvailableRoles.Count == 0)
+                        {
+                            <p class="text-muted">Cargando roles...</p>
+                        }
+                        else
+                        {
+                            <div class="d-flex flex-wrap gap-2">
+                                @foreach (var role in ViewModel.AvailableRoles)
+                                {
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="role-@role.Id"
+                                               checked="@SelectedRoles.Contains(role.Id)"
+                                               @onchange="@(e => OnRoleSelectionChanged(role.Id, e.Value))" />
+                                        <label class="form-check-label" for="role-@role.Id">
+                                            @role.Name
+                                        </label>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+
+                    <div class="form-group mt-4 d-flex justify-content-between">
+                        <button type="button" class="btn btn-secondary" @onclick="NavigateToUserList">
+                            <i class="fas fa-arrow-left me-1"></i> Volver
+                        </button>
+                        <button type="submit" class="btn btn-primary" disabled="@ViewModel.IsLoading">
+                            @if (ViewModel.IsLoading)
+                            {
+                                <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                <span>Guardando...</span>
+                            }
+                            else
+                            {
+                                <i class="fas fa-save me-1"></i>
+                                <span>Guardar</span>
+                            }
+                        </button>
+                    </div>
+                </EditForm>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string UserId { get; set; } = string.Empty;
+
+    private HashSet<string> SelectedRoles = new HashSet<string>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Cargamos los datos del usuario y los roles disponibles al inicializar el componente
+        await ViewModel.LoadUserAsync(UserId);
+        
+        // Inicializamos SelectedRoles con los valores del ViewModel (roles actuales del usuario)
+        SelectedRoles = new HashSet<string>(ViewModel.SelectedRoles);
+    }
+
+    private void OnRoleSelectionChanged(string roleId, object isChecked)
+    {
+        if (isChecked is bool isSelected)
+        {
+            if (isSelected)
+            {
+                SelectedRoles.Add(roleId);
+            }
+            else
+            {
+                SelectedRoles.Remove(roleId);
+            }
+
+            // Actualizar el SelectedRoles del ViewModel
+            ViewModel.SelectedRoles = SelectedRoles.ToList();
+        }
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        var updatedUser = await ViewModel.UpdateUserAsync();
+        if (updatedUser != null)
+        {
+            // Esperar un momento para mostrar el mensaje de éxito antes de redireccionar
+            await Task.Delay(1500);
+            NavigateToUserList();
+        }
+    }
+
+    private void NavigateToUserList()
+    {
+        NavigationManager.NavigateTo("/users");
+    }
+} 
