@@ -3,6 +3,7 @@
 @using System.Text.Json
 @using System.ComponentModel.DataAnnotations
 @using AppMultiTenant.Client.State
+@using AppMultiTenant.Client.ViewModels
 @inject NavigationManager NavigationManager
 @inject CustomAuthenticationStateProvider AuthStateProvider
 @inject HttpClient HttpClient
@@ -15,20 +16,20 @@
             <div class="card shadow p-4 mb-5">
                 <h2 class="mb-4 text-center">Iniciar Sesión</h2>
                 
-                <EditForm Model="loginModel" OnValidSubmit="HandleLogin">
+                <EditForm Model="loginViewModel" OnValidSubmit="HandleLogin">
                     <DataAnnotationsValidator />
                     <ValidationSummary class="text-danger" />
                     
                     <div class="mb-3">
                         <label for="email" class="form-label">Email</label>
-                        <InputText id="email" class="form-control" @bind-Value="loginModel.Email" />
-                        <ValidationMessage For="() => loginModel.Email" class="text-danger" />
+                        <InputText id="email" class="form-control" @bind-Value="loginViewModel.Email" />
+                        <ValidationMessage For="() => loginViewModel.Email" class="text-danger" />
                     </div>
                     
                     <div class="mb-3">
                         <label for="password" class="form-label">Contraseña</label>
-                        <InputText id="password" class="form-control" type="password" @bind-Value="loginModel.Password" />
-                        <ValidationMessage For="() => loginModel.Password" class="text-danger" />
+                        <InputText id="password" class="form-control" type="password" @bind-Value="loginViewModel.Password" />
+                        <ValidationMessage For="() => loginViewModel.Password" class="text-danger" />
                     </div>
                     
                     <button type="submit" class="btn btn-primary w-100 mt-3" disabled="@isBusy">
@@ -54,7 +55,7 @@
 </div>
 
 @code {
-    private LoginModel loginModel = new();
+    private LoginViewModel loginViewModel = new();
     private bool isBusy = false;
     private string errorMessage = "";
 
@@ -70,7 +71,7 @@
 
     private async Task HandleLogin()
     {
-        if (!loginModel.IsValid()) return;
+        if (!loginViewModel.IsValid()) return;
 
         isBusy = true;
         errorMessage = "";
@@ -78,7 +79,7 @@
         try
         {
             // Enviar solicitud de login
-            var loginRequest = new { Email = loginModel.Email, Password = loginModel.Password };
+            var loginRequest = new { Email = loginViewModel.Email, Password = loginViewModel.Password };
             var response = await HttpClient.PostAsJsonAsync("api/auth/login", loginRequest);
 
             if (response.IsSuccessStatusCode)
@@ -109,23 +110,6 @@
         {
             isBusy = false;
             StateHasChanged();
-        }
-    }
-
-    public class LoginModel
-    {
-        [Required(ErrorMessage = "El email es requerido")]
-        [EmailAddress(ErrorMessage = "Email inválido")]
-        public string Email { get; set; } = "";
-
-        [Required(ErrorMessage = "La contraseña es requerida")]
-        public string Password { get; set; } = "";
-
-        public bool IsValid()
-        {
-            var context = new ValidationContext(this);
-            var results = new List<ValidationResult>();
-            return Validator.TryValidateObject(this, context, results, true);
         }
     }
 } 
