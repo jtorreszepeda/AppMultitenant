@@ -1,25 +1,51 @@
 ﻿@inherits LayoutComponentBase
+@using AppMultiTenant.Client.State
+@inject NavigationManager NavigationManager
+@inject CustomAuthenticationStateProvider AuthStateProvider
 
 <MudThemeProvider />
 <MudDialogProvider />
 <MudSnackbarProvider />
 
-<MudLayout>
-    <MudAppBar Elevation="1">
-        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
-        <MudText Typo="Typo.h6" Class="ml-3">AppMultiTenant</MudText>
-        <MudSpacer />
-        <MudIconButton Icon="@Icons.Material.Filled.Person" Color="Color.Inherit" />
-    </MudAppBar>
-    <MudDrawer @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2">
-        <NavMenu />
-    </MudDrawer>
-    <MudMainContent>
-        <MudContainer MaxWidth="MaxWidth.Large" Class="my-4">
-            @Body
-        </MudContainer>
-    </MudMainContent>
-</MudLayout>
+<AuthorizeView>
+    <Authorized>
+        <MudLayout>
+            <MudAppBar Elevation="1">
+                <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
+                <MudText Typo="Typo.h6" Class="ml-3">AppMultiTenant</MudText>
+                <MudSpacer />
+                <MudMenu Icon="@Icons.Material.Filled.Person" Color="Color.Inherit" Direction="Direction.Bottom" OffsetY="true">
+                    <MudText Typo="Typo.body2" Class="px-4 py-2">@context.User.Identity?.Name</MudText>
+                    <MudDivider />
+                    <MudMenuItem Icon="@Icons.Material.Filled.Person">Mi perfil</MudMenuItem>
+                    <MudMenuItem Icon="@Icons.Material.Filled.Settings">Configuración</MudMenuItem>
+                    <MudMenuItem Icon="@Icons.Material.Filled.Logout" OnClick="Logout">Cerrar sesión</MudMenuItem>
+                </MudMenu>
+            </MudAppBar>
+            <MudDrawer @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2">
+                <NavMenu />
+            </MudDrawer>
+            <MudMainContent>
+                <MudContainer MaxWidth="MaxWidth.Large" Class="my-4">
+                    @Body
+                </MudContainer>
+            </MudMainContent>
+        </MudLayout>
+    </Authorized>
+    <NotAuthorized>
+        <MudLayout>
+            <MudAppBar Elevation="1">
+                <MudText Typo="Typo.h6" Class="ml-3">AppMultiTenant</MudText>
+                <MudSpacer />
+            </MudAppBar>
+            <MudMainContent>
+                <MudContainer MaxWidth="MaxWidth.Small" Class="my-16 pt-16">
+                    @Body
+                </MudContainer>
+            </MudMainContent>
+        </MudLayout>
+    </NotAuthorized>
+</AuthorizeView>
 
 @code {
     private bool _drawerOpen = true;
@@ -27,5 +53,11 @@
     private void DrawerToggle()
     {
         _drawerOpen = !_drawerOpen;
+    }
+
+    private async Task Logout()
+    {
+        await AuthStateProvider.MarkUserAsLoggedOut();
+        NavigationManager.NavigateTo("/login");
     }
 }

@@ -1,16 +1,42 @@
+@using Microsoft.AspNetCore.Components
+@inject NavigationManager NavigationManager
+
 <MudNavMenu>
     <MudText Typo="Typo.subtitle2" Color="Color.Primary" Class="ml-4 my-3">Administración</MudText>
     <MudDivider Class="mb-1" />
     <MudNavLink Href="/" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Dashboard">Dashboard</MudNavLink>
-    <MudNavLink Href="/users" Icon="@Icons.Material.Filled.Person">Usuarios</MudNavLink>
-    <MudNavLink Href="/roles" Icon="@Icons.Material.Filled.Security">Roles</MudNavLink>
-    <MudNavLink Href="/sectiondefinitions" Icon="@Icons.Material.Filled.ViewModule">Definición de Secciones</MudNavLink>
+    
+    <AuthorizeView Roles="SystemAdmin,TenantAdmin">
+        <MudNavLink Href="/users" Icon="@Icons.Material.Filled.Person">Usuarios</MudNavLink>
+    </AuthorizeView>
+    
+    <AuthorizeView Roles="SystemAdmin,TenantAdmin">
+        <MudNavLink Href="/roles" Icon="@Icons.Material.Filled.Security">Roles</MudNavLink>
+    </AuthorizeView>
+    
+    <AuthorizeView Roles="SystemAdmin,TenantAdmin">
+        <MudNavLink Href="/sectiondefinitions" Icon="@Icons.Material.Filled.ViewModule">Definición de Secciones</MudNavLink>
+    </AuthorizeView>
     
     <MudText Typo="Typo.subtitle2" Color="Color.Primary" Class="ml-4 my-3 mt-4">Secciones</MudText>
     <MudDivider Class="mb-1" />
     @* Aquí se agregarán dinámicamente las secciones personalizadas *@
+    <DynamicSectionNavItems />
     
-    <MudText Typo="Typo.subtitle2" Color="Color.Primary" Class="ml-4 my-3 mt-4">Sistema</MudText>
-    <MudDivider Class="mb-1" />
-    <MudNavLink Href="/systemadmin/tenants" Icon="@Icons.Material.Filled.Business">Gestión de Inquilinos</MudNavLink>
-</MudNavMenu> 
+    <AuthorizeView Roles="SystemAdmin">
+        <MudText Typo="Typo.subtitle2" Color="Color.Primary" Class="ml-4 my-3 mt-4">Sistema</MudText>
+        <MudDivider Class="mb-1" />
+        <MudNavLink Href="/systemadmin/tenants" Icon="@Icons.Material.Filled.Business">Gestión de Inquilinos</MudNavLink>
+    </AuthorizeView>
+</MudNavMenu>
+
+@code {
+    // Componente que se encargará de cargar dinámicamente las secciones disponibles
+    // según el rol del usuario (placeholder)
+    private class DynamicSectionNavItems : ComponentBase
+    {
+        // En una implementación real, este componente cargaría las secciones
+        // desde un servicio de API y mostraría solo aquellas a las que el usuario
+        // tiene permiso de acceso
+    }
+} 

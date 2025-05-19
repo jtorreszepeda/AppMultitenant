@@ -430,5 +430,10 @@ Según la lista de tareas, el proyecto se encuentra en las siguientes fases:
   - Sección de actividad reciente
   - Acciones rápidas para operaciones comunes
   - Información del sistema
-- Estructura básica de navegación con MainLayout y NavMenu
+- Implementación de componentes principales de navegación y autenticación:
+  - Layout principal (MainLayout) con visualización condicional basada en estado de autenticación
+  - Menú de navegación (NavMenu) con elementos que se muestran/ocultan según rol del usuario
+  - Componente de login con validación y manejo de errores
+  - Menú de usuario con opción de cierre de sesión
+  - Estructura base para visualización dinámica de secciones personalizadas
 - Preparación de la estructura para futuras páginas de gestión de usuarios, roles y secciones
