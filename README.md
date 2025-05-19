@@ -455,4 +455,14 @@ Según la lista de tareas, el proyecto se encuentra en las siguientes fases:
     - Integración con AuthApiClient para realizar el logout seguro
     - Eliminación de tokens y datos de sesión
   - Estructura base para visualización dinámica de secciones personalizadas
-- Preparación de la estructura para futuras páginas de gestión de usuarios, roles y secciones
+- Módulo de Gestión de Usuarios (completado):
+  - Implementación de ViewModels:
+    - UserListViewModel.cs para listar y filtrar usuarios
+    - CreateUserViewModel.cs para la creación de nuevos usuarios
+    - EditUserViewModel.cs para edición de usuarios y asignación de roles
+  - Implementación de vistas Razor:
+    - UserListPage.razor con funcionalidades de paginación y búsqueda
+    - CreateUserPage.razor con formulario de creación de usuarios
+    - EditUserPage.razor incluyendo interfaz para asignación de roles
+  - Integración con UserApiClient para operaciones CRUD (pendiente finalizar)
+- Preparación de la estructura para futuras páginas de gestión de roles y secciones
