@@ -8,7 +8,7 @@ namespace AppMultiTenant.ClientWASM.ViewModels
     /// <summary>
     /// ViewModel para la vista de edición de inquilinos (Super Administrador)
     /// </summary>
-    public class EditTenantViewModel_SA : INotifyPropertyChanged
+    public class EditTenantViewModel : INotifyPropertyChanged
     {
         private readonly ITenantApiClient _tenantApiClient;
         private bool _isLoading;
@@ -26,7 +26,7 @@ namespace AppMultiTenant.ClientWASM.ViewModels
         /// Constructor del ViewModel de edición de inquilinos
         /// </summary>
         /// <param name="tenantApiClient">Cliente API para operaciones con inquilinos</param>
-        public EditTenantViewModel_SA(ITenantApiClient tenantApiClient)
+        public EditTenantViewModel(ITenantApiClient tenantApiClient)
         {
             _tenantApiClient = tenantApiClient ?? throw new ArgumentNullException(nameof(tenantApiClient));
         }

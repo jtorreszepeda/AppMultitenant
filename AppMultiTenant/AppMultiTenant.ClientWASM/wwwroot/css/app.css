@@ -58,3 +58,37 @@ h1:focus {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
     text-align: start;
 }
+
+/* Navigation Menu Styles */
+.nav-section-title {
+    display: block;
+    padding: 0.5rem 0;
+    margin-top: 1rem;
+    margin-bottom: 0.25rem;
+    color: #e2e3e5;
+    font-weight: bold;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.nav-item {
+    margin-bottom: 0.5rem;
+}
+
+.nav-item .nav-link {
+    padding: 0.5rem 0;
+    color: #d7d7d7;
+    font-size: 0.9rem;
+    transition: all 0.3s;
+}
+
+.nav-item .nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.nav-item .nav-link.active {
+    background-color: rgba(255, 255, 255, 0.15);
+    color: white;
+}

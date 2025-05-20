@@ -45,6 +45,12 @@ builder.Services.AddScoped<RegisterViewModel>();
 builder.Services.AddScoped<UserListViewModel>();
 builder.Services.AddScoped<CreateUserViewModel>();
 builder.Services.AddScoped<EditUserViewModel>();
+builder.Services.AddScoped<RoleListViewModel>();
+builder.Services.AddScoped<CreateRoleViewModel>();
+builder.Services.AddScoped<EditRoleViewModel>();
+builder.Services.AddScoped<TenantListViewModel>();
+builder.Services.AddScoped<CreateTenantViewModel>();
+builder.Services.AddScoped<EditTenantViewModel>();
 
 var app = builder.Build();
 

@@ -8,7 +8,7 @@ namespace AppMultiTenant.ClientWASM.ViewModels
     /// <summary>
     /// ViewModel para la vista de creación de inquilinos (Super Administrador)
     /// </summary>
-    public class CreateTenantViewModel_SA : INotifyPropertyChanged
+    public class CreateTenantViewModel : INotifyPropertyChanged
     {
         private readonly ITenantApiClient _tenantApiClient;
         private bool _isLoading;
@@ -27,7 +27,7 @@ namespace AppMultiTenant.ClientWASM.ViewModels
         /// Constructor del ViewModel de creación de inquilinos
         /// </summary>
         /// <param name="tenantApiClient">Cliente API para operaciones con inquilinos</param>
-        public CreateTenantViewModel_SA(ITenantApiClient tenantApiClient)
+        public CreateTenantViewModel(ITenantApiClient tenantApiClient)
         {
             _tenantApiClient = tenantApiClient ?? throw new ArgumentNullException(nameof(tenantApiClient));
         }
