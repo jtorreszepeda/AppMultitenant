@@ -142,6 +142,21 @@ namespace AppMultiTenant.ClientWASM.Services
         Task<PagedResponse<UserDto>> GetUsersAsync(int pageNumber = 1, int pageSize = 10, bool includeInactive = false);
 
         /// <summary>
+        /// Obtiene un usuario por su email
+        /// </summary>
+        /// <param name="email">Email del usuario</param>
+        /// <returns>Datos del usuario</returns>
+        Task<UserDto> GetUserByEmailAsync(string email);
+
+        /// <summary>
+        /// Verifica si un email está disponible dentro del inquilino
+        /// </summary>
+        /// <param name="email">Email a verificar</param>
+        /// <param name="excludeUserId">ID de usuario a excluir de la verificación (opcional)</param>
+        /// <returns>True si está disponible, False si ya existe</returns>
+        Task<bool> CheckEmailAvailabilityAsync(string email, string excludeUserId = null);
+
+        /// <summary>
         /// Crea un nuevo usuario
         /// </summary>
         /// <param name="request">Datos del usuario a crear</param>
@@ -171,12 +186,27 @@ namespace AppMultiTenant.ClientWASM.Services
         Task<UserDto> DeactivateUserAsync(string userId);
 
         /// <summary>
+        /// Elimina un usuario
+        /// </summary>
+        /// <param name="userId">ID del usuario a eliminar</param>
+        /// <param name="currentUserId">ID del usuario que realiza la operación</param>
+        /// <returns>True si se eliminó correctamente, False en caso contrario</returns>
+        Task<bool> DeleteUserAsync(string userId, string currentUserId);
+
+        /// <summary>
         /// Cambia la contraseña de un usuario
         /// </summary>
         /// <param name="userId">ID del usuario</param>
         /// <param name="newPassword">Nueva contraseña</param>
         /// <returns>Tarea que representa la operación asíncrona</returns>
         Task ChangePasswordAsync(string userId, string newPassword);
+
+        /// <summary>
+        /// Obtiene los roles asignados a un usuario
+        /// </summary>
+        /// <param name="userId">ID del usuario</param>
+        /// <returns>Lista de roles asignados al usuario</returns>
+        Task<IEnumerable<string>> GetUserRolesAsync(string userId);
 
         /// <summary>
         /// Asigna un rol a un usuario
@@ -187,11 +217,27 @@ namespace AppMultiTenant.ClientWASM.Services
         Task AssignRoleToUserAsync(string userId, string roleId);
 
         /// <summary>
+        /// Asigna múltiples roles a un usuario
+        /// </summary>
+        /// <param name="userId">ID del usuario</param>
+        /// <param name="roleIds">IDs de los roles a asignar</param>
+        /// <returns>Tarea que representa la operación asíncrona</returns>
+        Task AssignRolesToUserAsync(string userId, IEnumerable<string> roleIds);
+
+        /// <summary>
         /// Revoca un rol de un usuario
         /// </summary>
         /// <param name="userId">ID del usuario</param>
         /// <param name="roleId">ID del rol a revocar</param>
         /// <returns>Tarea que representa la operación asíncrona</returns>
         Task RevokeRoleFromUserAsync(string userId, string roleId);
+
+        /// <summary>
+        /// Revoca múltiples roles de un usuario
+        /// </summary>
+        /// <param name="userId">ID del usuario</param>
+        /// <param name="roleIds">IDs de los roles a revocar</param>
+        /// <returns>Tarea que representa la operación asíncrona</returns>
+        Task RevokeRolesFromUserAsync(string userId, IEnumerable<string> roleIds);
     }
 }
