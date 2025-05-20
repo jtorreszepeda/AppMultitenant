@@ -27,13 +27,13 @@ namespace AppMultiTenant.Infrastructure.Persistence
         }
 
         /// <summary>
-        /// Constructor para uso en pruebas o migración
+        /// Constructor para uso en pruebas o migración (NO usar con DI)
         /// </summary>
         /// <param name="options">Opciones del DbContext</param>
         /// <param name="tenantId">ID del inquilino o null para el modo admin global</param>
         public AppDbContext(
             DbContextOptions<AppDbContext> options, 
-            Guid? tenantId = null) : base(options)
+            Guid? tenantId) : base(options)
         {
             _currentTenantId = tenantId;
         }

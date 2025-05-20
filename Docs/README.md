@@ -428,6 +428,10 @@ Según la lista de tareas, el proyecto se encuentra en las siguientes fases:
   - Integración con el sistema de autorización de Blazor
   - Configuración de rutas protegidas con AuthorizeRouteView
   - Redirección automática al login para usuarios no autenticados
+  - Implementación de componentes RequireAuth y RequireRole para protección de páginas:
+    - RequireAuth: Redirige a la página de login si el usuario no está autenticado
+    - RequireRole: Verifica roles específicos y muestra mensaje de acceso denegado o redirige al login según corresponda
+    - Aplicación de estos componentes en todas las páginas de gestión (Usuarios, Roles, Secciones y Tenants)
 - Implementación de servicios ApiClient para comunicación con el backend:
   - AuthApiClient para operaciones de autenticación y gestión de tokens:
     - Implementación completa de métodos para login/logout

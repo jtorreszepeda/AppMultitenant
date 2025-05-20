@@ -19,12 +19,18 @@ namespace AppMultiTenant.Infrastructure.Persistence.Configuration
         /// <returns>Colección de servicios actualizada</returns>
         public static IServiceCollection AddPersistenceServices(this IServiceCollection services, IConfiguration configuration)
         {
-            // Registrar AppDbContext con PostgreSQL
-            services.AddDbContext<AppDbContext>(options =>
+            // Registrar AppDbContext con PostgreSQL y resolver ITenantResolverService para evitar ambigüedad de constructores
+            services.AddDbContext<AppDbContext>((serviceProvider, options) =>
+            {
+                var configuration = serviceProvider.GetRequiredService<IConfiguration>();
+                var tenantResolver = serviceProvider.GetRequiredService<AppMultiTenant.Application.Interfaces.Services.ITenantResolverService>();
                 options.UseNpgsql(
                     configuration.GetConnectionString("DefaultConnection"),
                     npgsql => npgsql.MigrationsAssembly(typeof(AppDbContext).Assembly.FullName)
-                )
+                );
+            },
+            ServiceLifetime.Scoped,
+            ServiceLifetime.Scoped
             );
 
             // Registrar repositorios
