@@ -123,6 +123,13 @@ La aplicación sigue una arquitectura limpia con separación clara de responsabi
 
 ### 5. **`AppMultiTenant.Client`** - Interfaz de Usuario
 - **`Components/`**: Componentes Blazor para la interfaz.
+  - **`Layout/`**: Componentes de diseño de la aplicación:
+    - **`MainLayout.razor`**: Layout principal para usuarios normales.
+    - **`SuperAdminLayout.razor`**: Layout específico para Super Administradores con tema y navegación distintos.
+    - **`NavMenu.razor`**: Menú de navegación principal.
+    - **`SuperAdminNavMenu.razor`**: Menú de navegación específico para Super Administradores.
+  - **`Routes.razor`**: Enrutamiento dinámico que aplica diferentes layouts según la ruta.
+  - **`Pages/`**: Páginas de la aplicación.
 - **`ViewModels/`**: Implementaciones MVVM para la lógica de presentación.
 - **`Services/`**: Servicios del cliente para comunicación con la API.
 - **`State/`**: Gestión del estado de la aplicación cliente.
@@ -300,6 +307,13 @@ Cliente ──▶ SystemAdminTenantsController ──▶ SystemAdminTenantServic
    - Implementa `ITenantRepository`.
    - Utiliza `AppDbContext` para operaciones de base de datos.
    - No aplica filtrado por `TenantId` para la entidad `Tenant`.
+
+4. **Interfaz de Super Administrador**:
+   - **`SuperAdminLayout.razor`**: Layout específico con tema distinto para indicar claramente modo Super Administrador.
+   - **`SuperAdminNavMenu.razor`**: Menú de navegación especializado (SuperAdminNavMenu) con opciones relevantes para administración del sistema.
+   - Aplicación automática del layout específico para rutas que comienzan con `/superadmin/`.
+   - Implementación de la separación visual clara entre la interfaz de Super Administrador y la de usuarios normales.
+   - Navegación específica y simplificada para las tareas del Super Administrador.
 
 ## Filtrado por Inquilino en Base de Datos - El Corazón del Multi-tenant
 
@@ -485,4 +499,9 @@ Según la lista de tareas, el proyecto se encuentra en las siguientes fases:
     - CreateRolePage.razor con formulario de creación de roles e interfaz para asignación de permisos
     - EditRolePage.razor con interfaz para edición de roles y gestión de permisos
   - Integración con RoleApiClient para operaciones CRUD y gestión de permisos
+- Implementación de interfaz específica para Super Administrador (completado):
+  - Layout dedicado (SuperAdminLayout) con tema visual distinto para indicar claramente modo Super Administrador
+  - Menú de navegación especializado (SuperAdminNavMenu) con opciones relevantes para administración del sistema
+  - Enrutamiento dinámico que aplica automáticamente el layout adecuado según la ruta
+  - Distintivos visuales para diferenciar claramente la interfaz de Super Administrador de la interfaz normal
 - Preparación de la estructura para futuras páginas de gestión de secciones

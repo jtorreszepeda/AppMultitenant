@@ -1,9 +1,10 @@
 ﻿@using Microsoft.AspNetCore.Components.Authorization
+@inject NavigationManager NavigationManager
 
 <CascadingAuthenticationState>
     <Router AppAssembly="typeof(Program).Assembly">
         <Found Context="routeData">
-            <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(Layout.MainLayout)">
+            <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@GetLayoutForRoute(routeData)">
                 <NotAuthorized>
                     @if (context.User.Identity?.IsAuthenticated != true)
                     {
@@ -41,3 +42,27 @@
         </NotFound>
     </Router>
 </CascadingAuthenticationState>
+
+@code {
+    private Type GetLayoutForRoute(RouteData routeData)
+    {
+        // Obtener la URL actual
+        var currentUrl = NavigationManager.Uri;
+        
+        // Verificar si la URL comienza con "/superadmin/"
+        if (currentUrl.Contains("/superadmin/"))
+        {
+            return typeof(Layout.SuperAdminLayout);
+        }
+        
+        // También verificamos por tipo de página como respaldo
+        var path = routeData.PageType.FullName ?? string.Empty;
+        if (path.Contains("Pages.Tenants.") && path.Contains("_SA"))
+        {
+            return typeof(Layout.SuperAdminLayout);
+        }
+        
+        // Para cualquier otra ruta, usamos el layout principal
+        return typeof(Layout.MainLayout);
+    }
+}

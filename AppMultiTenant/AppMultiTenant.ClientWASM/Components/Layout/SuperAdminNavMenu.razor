@@ -1,0 +1,53 @@
+<div class="top-row ps-3 navbar navbar-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="">
+            <span class="bi bi-shield-lock-fill me-2" aria-hidden="true"></span> Admin Panel
+        </a>
+    </div>
+</div>
+
+<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
+
+<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
+    <nav class="nav flex-column">
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                <span class="bi bi-speedometer2 me-2" aria-hidden="true"></span> Dashboard
+            </NavLink>
+        </div>
+
+        <!-- Tenants Section (SuperAdmin only) -->
+        <div class="nav-item px-3">
+            <span class="nav-section-title">Gestión de Inquilinos</span>
+            <NavLink class="nav-link" href="superadmin/tenants">
+                <span class="bi bi-building me-2" aria-hidden="true"></span> Lista de Inquilinos
+            </NavLink>
+            <NavLink class="nav-link" href="superadmin/tenants/create">
+                <span class="bi bi-building-add me-2" aria-hidden="true"></span> Crear Inquilino
+            </NavLink>
+        </div>
+
+        <!-- System Section -->
+        <div class="nav-item px-3">
+            <span class="nav-section-title">Sistema</span>
+            <NavLink class="nav-link" href="superadmin/system/settings">
+                <span class="bi bi-gear me-2" aria-hidden="true"></span> Configuración
+            </NavLink>
+            <NavLink class="nav-link" href="superadmin/system/logs">
+                <span class="bi bi-journal-text me-2" aria-hidden="true"></span> Logs
+            </NavLink>
+        </div>
+    </nav>
+</div>
+
+<style>
+    .nav-section-title {
+        display: block;
+        padding: 0.5rem 1rem;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: rgba(255,255,255,0.6);
+        text-transform: uppercase;
+        margin-top: 1rem;
+    }
+</style> 
