@@ -21,7 +21,7 @@ Este proyecto implementa una plataforma SaaS (Software as a Service) que permite
 - **AppMultiTenant.Application**: Casos de uso, interfaces de servicios, interfaces de repositorio
 - **AppMultiTenant.Infrastructure**: Implementación de interfaces de Aplicación y Dominio
 - **AppMultiTenant.Server**: API Backend (ASP.NET Core Web API)
-- **AppMultiTenant.Client**: Frontend (Blazor WebAssembly con MVVM)
+- **AppMultiTenant.ClientWASM**: Frontend (Blazor WebAssembly con MVVM)
 
 ## Requisitos previos
 
@@ -119,9 +119,14 @@ La aplicación sigue una arquitectura limpia con separación clara de responsabi
 - **`TenantResolutionMiddleware`**: Middleware que resuelve el inquilino para cada solicitud.
 - **`GlobalExceptionHandlingMiddleware`**: Middleware que captura todas las excepciones no controladas y las transforma en respuestas HTTP estructuradas y consistentes.
 - **`Program.cs`**: Configuración de la aplicación, servicios y middleware.
-- **`Controllers/`**: Controladores REST que expondrán los servicios de la aplicación (pendientes de implementar).
+- **Controladores**:
+  - **`AuthController`**: Maneja autenticación y registro de usuarios.
+  - **`SystemAdminTenantsController`**: Gestión de inquilinos por el Super Administrador.
+  - **`TenantUsersController`**: Gestión de usuarios dentro de un inquilino.
+  - **`TenantRolesController`**: Gestión de roles y permisos dentro de un inquilino.
+  - **`TenantSectionDefinitionsController`**: Gestión de definiciones de secciones por el Administrador de Inquilino.
 
-### 5. **`AppMultiTenant.Client`** - Interfaz de Usuario
+### 5. **`AppMultiTenant.ClientWASM`** - Interfaz de Usuario
 - **`Components/`**: Componentes Blazor para la interfaz.
   - **`Layout/`**: Componentes de diseño de la aplicación:
     - **`MainLayout.razor`**: Layout principal para usuarios normales.
@@ -129,7 +134,13 @@ La aplicación sigue una arquitectura limpia con separación clara de responsabi
     - **`NavMenu.razor`**: Menú de navegación principal.
     - **`SuperAdminNavMenu.razor`**: Menú de navegación específico para Super Administradores.
   - **`Routes.razor`**: Enrutamiento dinámico que aplica diferentes layouts según la ruta.
-  - **`Pages/`**: Páginas de la aplicación.
+  - **`Pages/`**: Páginas de la aplicación organizadas en módulos:
+    - **`Auth/`**: Componentes para autenticación (Login, Register).
+    - **`Users/`**: Gestión de usuarios del inquilino.
+    - **`Roles/`**: Gestión de roles y permisos.
+    - **`SectionDefinitions/`**: Gestión de definiciones de secciones.
+    - **`Tenants/`**: Gestión de inquilinos (Super Administrador).
+    - **`Home.razor`**: Dashboard principal.
 - **`ViewModels/`**: Implementaciones MVVM para la lógica de presentación.
 - **`Services/`**: Servicios del cliente para comunicación con la API.
 - **`State/`**: Gestión del estado de la aplicación cliente.
@@ -344,7 +355,7 @@ Este mecanismo garantiza que:
 2. Las entidades nuevas **se asignan automáticamente** al inquilino actual.
 3. El código de repositorio permanece **simple y libre de lógica de filtrado manual**.
 
-## Flujo MVVM en el Cliente Blazor WebAssembly (Planificado)
+## Flujo MVVM en el Cliente Blazor WebAssembly
 
 ```
 ┌────────────────┐      ┌────────────────┐      ┌────────────────┐
@@ -363,17 +374,17 @@ Este mecanismo garantiza que:
                                                 └────────────────┘
 ```
 
-1. **Vistas** (`AppMultiTenant.Client`):
+1. **Vistas** (`AppMultiTenant.ClientWASM`):
    - Archivos `.razor` que representan la interfaz de usuario.
    - Enlazados a ViewModels correspondientes mediante inyección de dependencias.
    - Muestran datos y responden a interacciones del usuario.
 
-2. **ViewModels** (`AppMultiTenant.Client`):
+2. **ViewModels** (`AppMultiTenant.ClientWASM`):
    - Implementan propiedades y comandos para las vistas.
    - Gestionan el estado de la UI y la validación.
    - Utilizan los ApiClients para comunicarse con el backend.
 
-3. **ApiClients** (`AppMultiTenant.Client`):
+3. **ApiClients** (`AppMultiTenant.ClientWASM`):
    - Encapsulan la comunicación HTTP con la API.
    - Gestionan el token JWT para autenticación.
    - Serializan/deserializan entidades del dominio.
@@ -395,113 +406,72 @@ Todo esto mientras el sistema garantiza que los datos de un inquilino nunca son 
 
 ## Estado Actual del Proyecto
 
-Según la lista de tareas, el proyecto se encuentra en las siguientes fases:
+El proyecto se encuentra actualmente en un estado avanzado de desarrollo:
 
-### Backend (Completado):
-- La definición de entidades del dominio
-- Las interfaces e implementaciones de servicios de aplicación
-- La configuración de la infraestructura y base de datos con soporte multi-inquilino
-- La implementación de la resolución de inquilinos
-- La implementación de controladores API:
-  - AuthController para autenticación
-  - SystemAdminTenantsController para gestión de inquilinos por el Super Administrador
-  - TenantUsersController para gestión de usuarios dentro de un inquilino
-  - TenantRolesController para gestión de roles y asignación de permisos dentro de un inquilino
-  - TenantSectionDefinitionsController para gestión de definiciones de secciones por el Administrador de Inquilino
-- La configuración de políticas de autorización basadas en roles, permisos y TenantId:
-  - Implementación de TenantAuthorizationHandler y PermissionAuthorizationHandler
-  - Aplicación de políticas a los endpoints de la API
-  - Verificación de pertenencia al inquilino correcto y posesión de permisos necesarios
-- Implementación de un middleware global de manejo de errores:
-  - Captura centralizada de excepciones no controladas
-  - Transformación de excepciones en respuestas HTTP estructuradas
-  - Integración con el sistema de logging
-  - Soporte para excepciones de dominio personalizadas
-- Implementación de un servicio de serialización para entidades de dominio:
-  - Servicio centralizado para manejar la serialización/deserialización segura
-  - Configuraciones de seguridad para evitar vulnerabilidades
-  - Gestión de referencias circulares y otras consideraciones
-  - Documentación detallada de riesgos y mitigaciones
-- Implementación de validación de modelos en los controladores:
-  - Filtro de acción global (ModelValidationFilter) que utiliza FluentValidation
-  - Validación automática y consistente de todos los modelos recibidos en los controladores
-  - Integración con IValidationService para reglas de negocio complejas
-  - Documentación detallada del enfoque de validación en capas
-  - Simplificación del código de los controladores eliminando validaciones manuales repetitivas
+### Completado:
 
-### Frontend (En Desarrollo):
-- Configuración inicial del proyecto Blazor WebAssembly
-- Implementación de CSS personalizado para los componentes UI
-- Configuración del HttpClient en Program.cs para la comunicación con la API del backend:
-  - Implementación de `AuthTokenHandler` como `DelegatingHandler` para adjuntar automáticamente el token JWT a todas las solicitudes HTTP salientes
-  - Configuración de `HttpClientFactory` para utilizar el `AuthTokenHandler`
-  - Gestión de errores robusta en las solicitudes HTTP
-- Implementación del sistema de autenticación basado en JWT:
-  - CustomAuthenticationStateProvider para gestionar tokens JWT
-  - Almacenamiento seguro de tokens en localStorage del navegador
-  - Integración con el sistema de autorización de Blazor
-  - Configuración de rutas protegidas con `AuthorizeRouteView` en Routes.razor:
-    - Redirección automática al login para usuarios no autenticados mediante el componente `RedirectToLogin`
-    - Redirección a página de acceso denegado mediante el componente `RedirectToAccessDenied`
-    - Implementación de página `AccessDenied.razor` con opciones de navegación
-    - Preservación de la URL original para redirigir al usuario después del login exitoso
-    - Visualización de indicador de carga durante la autorización
-  - Protección de páginas críticas con el atributo [Authorize]:
-    - Aplicación del atributo a las páginas de gestión de usuarios, roles y secciones
-    - Sistema consistente de manejo de errores de autorización
-  - Actualización de navegación y layout principal:
-    - Visualización condicional de opciones de menú basadas en autenticación
-    - Botones de login/logout en MainLayout según estado de autenticación
-- Implementación de servicios ApiClient para comunicación con el backend:
-  - AuthApiClient para operaciones de autenticación y gestión de tokens:
-    - Implementación completa de métodos para login/logout
-    - Almacenamiento y borrado seguro de tokens JWT
-    - Integración con componentes Login y MainLayout
-    - Verificación del estado de autenticación
-  - UserApiClient para gestión de usuarios por inquilino
-  - RoleApiClient para gestión de roles y permisos
-  - TenantApiClient para operaciones de administración de inquilinos
-  - SectionApiClient para gestión de definiciones de secciones personalizadas
-  - Manejo centralizado de serialización/deserialización de datos
-  - Gestión de errores HTTP consistente
-- Implementación del dashboard profesional en la página principal:
-  - Tarjetas de estadísticas para usuarios, roles y secciones
-  - Sección de actividad reciente
-  - Acciones rápidas para operaciones comunes
-  - Información del sistema
-- Implementación de componentes principales de navegación y autenticación:
-  - Layout principal (MainLayout) con visualización condicional basada en estado de autenticación
-  - Menú de navegación (NavMenu) con elementos que se muestran/ocultan según rol del usuario
-  - Componente de login con validación y manejo de errores:
-    - Utilización de AuthApiClient para gestionar el proceso de autenticación
-    - Manejo de excepciones y errores de autenticación
-  - Menú de usuario con opción de cierre de sesión:
-    - Integración con AuthApiClient para realizar el logout seguro
-    - Eliminación de tokens y datos de sesión
-  - Estructura base para visualización dinámica de secciones personalizadas
-- Módulo de Gestión de Usuarios (completado):
-  - Implementación de ViewModels:
-    - UserListViewModel.cs para listar y filtrar usuarios
-    - CreateUserViewModel.cs para la creación de nuevos usuarios
-    - EditUserViewModel.cs para edición de usuarios y asignación de roles
-  - Implementación de vistas Razor:
-    - UserListPage.razor con funcionalidades de paginación y búsqueda
-    - CreateUserPage.razor con formulario de creación de usuarios
-    - EditUserPage.razor incluyendo interfaz para asignación de roles
-  - Integración con UserApiClient para operaciones CRUD (pendiente finalizar)
-- Módulo de Gestión de Roles y Permisos (completado):
-  - Implementación de ViewModels:
-    - RoleListViewModel.cs para listar y filtrar roles
-    - CreateRoleViewModel.cs para la creación de nuevos roles
-    - EditRoleViewModel.cs para edición de roles y asignación de permisos
-  - Implementación de vistas Razor:
-    - RoleListPage.razor con funcionalidades de paginación, búsqueda y eliminación
-    - CreateRolePage.razor con formulario de creación de roles e interfaz para asignación de permisos
-    - EditRolePage.razor con interfaz para edición de roles y gestión de permisos
-  - Integración con RoleApiClient para operaciones CRUD y gestión de permisos
-- Implementación de interfaz específica para Super Administrador (completado):
-  - Layout dedicado (SuperAdminLayout) con tema visual distinto para indicar claramente modo Super Administrador
-  - Menú de navegación especializado (SuperAdminNavMenu) con opciones relevantes para administración del sistema
-  - Enrutamiento dinámico que aplica automáticamente el layout adecuado según la ruta
-  - Distintivos visuales para diferenciar claramente la interfaz de Super Administrador de la interfaz normal
-- Preparación de la estructura para futuras páginas de gestión de secciones
+- **Fase 0: Cimientos y Configuración Inicial**
+  - Creación de la estructura del proyecto y configuración básica
+  - Implementación del núcleo multi-inquilino básico
+
+- **Fase 1: Modelado del Dominio (Backend)**
+  - Definición completa de todas las entidades del dominio
+  - Implementación de interfaces y validaciones básicas
+
+- **Fase 2: Núcleo de la Capa de Aplicación (Backend)**
+  - Definición de interfaces de servicios y repositorios
+  - Implementación de todos los servicios principales de aplicación
+
+- **Fase 3: Implementación de la Infraestructura (Backend)**
+  - Configuración completa de Entity Framework Core con filtrado por inquilino
+  - Implementación de todos los repositorios
+  - Configuración de Identity y JWT para autenticación
+
+- **Fase 4: Desarrollo de la API Backend**
+  - Implementación de todos los controladores principales:
+    - AuthController
+    - SystemAdminTenantsController
+    - TenantUsersController
+    - TenantRolesController
+    - TenantSectionDefinitionsController
+  - Configuración de middleware para resolución de inquilinos y manejo de errores
+  - Implementación de políticas de autorización y validación de modelos
+
+- **Fase 5: Desarrollo de la Capa de Presentación Cliente**
+  - Implementación del dashboard principal
+  - Configuración de la autenticación basada en JWT
+  - Implementación de los módulos:
+    - Autenticación y autorización
+    - Gestión de usuarios
+    - Gestión de roles y permisos
+    - Gestión de definiciones de secciones
+    - Administración de inquilinos (Super Administrador)
+  - Implementación de interfaces específicas para Super Administrador y usuarios normales
+
+### Pendiente:
+
+- **Fase 6: Estrategia de Pruebas**
+  - Configuración de proyectos de pruebas unitarias e integración
+  - Implementación de pruebas para componentes críticos
+
+- **Fase 7: Aspectos Transversales y Refinamiento**
+  - Implementación exhaustiva de validación de entradas
+  - Revisión de seguridad completa
+  - Optimización de rendimiento
+
+- **Fase 8: Despliegue**
+  - Configuración de pipelines CI/CD
+  - Configuración de entornos de despliegue
+  - Implementación de estrategias de migración de base de datos
+
+- **Fase 9: Monitorización y Mantenimiento Continuo**
+  - Configuración de herramientas de monitorización
+  - Establecimiento de procesos de mantenimiento regular
+
+### Funcionalidades que quedaron fuera del alcance inicial:
+
+- Gestión completa de Contenido Dinámico (CRUD por Sección)
+- Módulo completo de Definición de Campos para Secciones
+- Entidad SectionDataEntry y FieldValue o alternativa JSON
+
+Estas funcionalidades están planificadas para futuras iteraciones del proyecto.
