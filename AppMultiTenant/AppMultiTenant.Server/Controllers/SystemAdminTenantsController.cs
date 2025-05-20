@@ -8,7 +8,7 @@ namespace AppMultiTenant.Server.Controllers
     /// Controlador para la gestión de inquilinos (tenants) por el Super Administrador
     /// </summary>
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/system-admin/tenants")]
     // TODO: Agregar autorización específica para Super Admin cuando se implemente
     public class SystemAdminTenantsController : ControllerBase
     {
