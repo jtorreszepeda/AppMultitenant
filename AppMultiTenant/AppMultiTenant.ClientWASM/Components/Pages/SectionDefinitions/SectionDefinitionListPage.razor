@@ -1,0 +1,214 @@
+@page "/section-definitions"
+@inject SectionDefinitionListViewModel ViewModel
+@inject NavigationManager NavigationManager
+@inject IJSRuntime jsRuntime
+
+<PageTitle>Gestión de Definiciones de Secciones</PageTitle>
+
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Definiciones de Secciones</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a href="/">Inicio</a></li>
+        <li class="breadcrumb-item active">Definiciones de Secciones</li>
+    </ol>
+
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <div>
+                <i class="fas fa-table me-1"></i>
+                Lista de Definiciones de Secciones
+            </div>
+            <div>
+                <a href="/section-definitions/create" class="btn btn-primary btn-sm">
+                    <i class="fas fa-plus me-1"></i> Nueva Definición
+                </a>
+            </div>
+        </div>
+        <div class="card-body">
+            @if (!string.IsNullOrEmpty(ViewModel.ErrorMessage))
+            {
+                <div class="alert alert-danger">@ViewModel.ErrorMessage</div>
+            }
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Buscar por nombre o descripción" 
+                               @bind="SearchTerm" @bind:event="oninput" @onkeyup="HandleSearchKeyUp" />
+                        <button class="btn btn-outline-primary" type="button" @onclick="SearchSections">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-6 d-flex justify-content-end">
+                    <div class="btn-group">
+                        <button class="btn btn-outline-secondary" @onclick="() => LoadSections()">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            @if (ViewModel.IsLoading)
+            {
+                <div class="d-flex justify-content-center my-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Cargando...</span>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Descripción</th>
+                                <th>Campos</th>
+                                <th style="width: 120px">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (ViewModel.SectionDefinitions.Count == 0)
+                            {
+                                <tr>
+                                    <td colspan="4" class="text-center">No se encontraron definiciones de secciones</td>
+                                </tr>
+                            }
+                            else
+                            {
+                                @foreach (var sectionDefinition in ViewModel.SectionDefinitions)
+                                {
+                                    <tr>
+                                        <td>@sectionDefinition.Name</td>
+                                        <td>@sectionDefinition.Description</td>
+                                        <td>
+                                            @if (sectionDefinition.Fields != null && sectionDefinition.Fields.Any())
+                                            {
+                                                <div class="d-flex flex-wrap gap-1">
+                                                    @foreach (var field in sectionDefinition.Fields.Take(3))
+                                                    {
+                                                        <span class="badge bg-secondary">@field.Name</span>
+                                                    }
+                                                    @if (sectionDefinition.Fields.Count > 3)
+                                                    {
+                                                        <span class="badge bg-info">+@(sectionDefinition.Fields.Count - 3) más</span>
+                                                    }
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">Sin campos definidos</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <a href="@($"/section-definitions/edit/{sectionDefinition.Id}")" class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <button @onclick="() => DeleteSection(sectionDefinition.Id)" class="btn btn-sm btn-outline-danger">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Confirmación de Eliminación -->
+<div class="modal fade" id="deleteSectionModal" tabindex="-1" aria-labelledby="deleteSectionModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteSectionModalLabel">Confirmar Eliminación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                ¿Está seguro que desea eliminar esta definición de sección? Esta acción eliminará todos los campos asociados y no se puede deshacer.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger" @onclick="ConfirmDelete" data-bs-dismiss="modal">Eliminar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string SearchTerm { get; set; } = string.Empty;
+    private string SectionIdToDelete { get; set; } = string.Empty;
+    private Timer SearchTimer { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadSections();
+    }
+
+    private async Task LoadSections()
+    {
+        await ViewModel.LoadSectionDefinitionsAsync();
+    }
+
+    private void HandleSearchKeyUp(KeyboardEventArgs e)
+    {
+        // Inicializamos o reseteamos el temporizador cada vez que el usuario escribe
+        SearchTimer?.Dispose();
+        
+        if (e.Key == "Enter")
+        {
+            SearchSections();
+        }
+        else
+        {
+            // Esperamos 500ms después de que el usuario termina de escribir para buscar
+            SearchTimer = new Timer(_ => 
+            {
+                InvokeAsync(() => 
+                {
+                    ViewModel.SearchTerm = SearchTerm;
+                    ViewModel.SearchSectionDefinitionsAsync();
+                    StateHasChanged();
+                });
+            }, null, 500, Timeout.Infinite);
+        }
+    }
+
+    private void SearchSections()
+    {
+        SearchTimer?.Dispose();
+        ViewModel.SearchTerm = SearchTerm;
+        ViewModel.SearchSectionDefinitionsAsync();
+    }
+
+    private async Task DeleteSection(string sectionId)
+    {
+        SectionIdToDelete = sectionId;
+        // Mostrar modal de confirmación
+        await jsRuntime.InvokeVoidAsync("eval", "new bootstrap.Modal(document.getElementById('deleteSectionModal')).show()");
+    }
+
+    private async Task ConfirmDelete()
+    {
+        if (string.IsNullOrEmpty(SectionIdToDelete))
+            return;
+
+        try
+        {
+            await ViewModel.DeleteSectionDefinitionAsync(SectionIdToDelete);
+            SectionIdToDelete = string.Empty;
+            await LoadSections();
+        }
+        catch (Exception)
+        {
+            // El error ya debería estar capturado en el ViewModel
+        }
+    }
+} 

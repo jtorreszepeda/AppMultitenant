@@ -40,20 +40,18 @@
                         }
                     </div>
                 </header>
-                <div class="app-content">
-                    <nav class="app-drawer @(_drawerOpen ? "open" : "closed")">
-                        <NavMenu />
-                    </nav>
-                    <main class="main-content">
-                        <div class="container">
-                            @Body
-                        </div>
-                    </main>
-                </div>
+                
+                <nav class="app-drawer @(_drawerOpen ? "open" : "closed")">
+                    <NavMenu />
+                </nav>
+                
+                <main class="main-content">
+                    @Body
+                </main>
             </div>
         </Authorized>
         <NotAuthorized>
-            <div class="app-layout">
+            <div class="app-layout auth-layout">
                 <header class="app-bar">
                     <h1 class="app-title">AppMultiTenant</h1>
                     <div class="spacer"></div>

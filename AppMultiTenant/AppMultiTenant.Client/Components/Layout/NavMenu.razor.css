@@ -1,0 +1,73 @@
+.nav-menu {
+    width: 220px;
+    background: #f8fafc;
+    border-right: 1px solid #e0e7ef;
+    min-height: 100vh;
+    padding: 1.5rem 0.5rem 1.5rem 0.5rem;
+    box-shadow: 2px 0 8px 0 rgba(200,220,255,0.04);
+    display: flex;
+    flex-direction: column;
+    font-family: 'Segoe UI', Arial, sans-serif;
+}
+
+.section-title {
+    font-size: 1rem;
+    color: #7EC8E3;
+    font-weight: 600;
+    margin: 0.5rem 0 0.2rem 1rem;
+    letter-spacing: 0.5px;
+}
+
+.divider {
+    border: none;
+    border-top: 1px solid #e0e7ef;
+    margin: 0.2rem 0 0.7rem 0;
+}
+
+.nav-item {
+    margin: 0.2rem 0.5rem;
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    padding: 0.6rem 1rem;
+    border-radius: 8px;
+    color: #4a5568;
+    text-decoration: none;
+    font-size: 1rem;
+    background: transparent;
+    transition: background 0.2s, color 0.2s;
+    border: none;
+    cursor: pointer;
+}
+
+.nav-link.active, .nav-link:hover, .nav-link:focus {
+    background: #e3f6fc;
+    color: #2b6cb0;
+}
+
+.nav-icon {
+    margin-right: 0.7rem;
+    display: flex;
+    align-items: center;
+}
+
+.logout-link {
+    color: #e57373;
+    background: transparent;
+    border: none;
+    width: 100%;
+    text-align: left;
+    padding: 0.6rem 1rem;
+    border-radius: 8px;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    transition: background 0.2s, color 0.2s;
+}
+
+.logout-link:hover, .logout-link:focus {
+    background: #ffeaea;
+    color: #b71c1c;
+} 

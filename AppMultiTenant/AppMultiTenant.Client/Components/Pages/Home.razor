@@ -1,118 +1,101 @@
 ﻿@page "/"
 
-<PageTitle>Dashboard - AppMultiTenant</PageTitle>
+<PageTitle>Inicio - AppMultiTenant</PageTitle>
 
-<div class="container">
-    <h4 class="dashboard-title">Dashboard</h4>
-    
-    <div class="grid">
-        <div class="grid-item">
-            <div class="card">
-                <p class="subtitle">Usuarios Activos</p>
-                <h4 class="stat-value">@_userCount</h4>
-                <hr class="divider" />
-                <a href="/users" class="link">Ver detalle</a>
+<div class="home-container full-width">
+    <div class="welcome-section">
+        <h1 class="welcome-title">Bienvenido a AppMultiTenant</h1>
+        <p class="welcome-subtitle">Plataforma de gestión multiinquilino</p>
+    </div>
+
+    <div class="quick-access-grid">
+        <AuthorizeView Roles="SystemAdmin,TenantAdmin">
+            <div class="access-card users-card">
+                <div class="card-icon">👤</div>
+                <div class="card-content">
+                    <h3>Usuarios</h3>
+                    <p>Gestione usuarios y permisos</p>
+                    <a href="/users" class="card-link">Acceder</a>
+                </div>
             </div>
-        </div>
+        </AuthorizeView>
         
-        <div class="grid-item">
-            <div class="card">
-                <p class="subtitle">Roles</p>
-                <h4 class="stat-value">@_roleCount</h4>
-                <hr class="divider" />
-                <a href="/roles" class="link">Ver detalle</a>
+        <AuthorizeView Roles="SystemAdmin,TenantAdmin">
+            <div class="access-card roles-card">
+                <div class="card-icon">🔒</div>
+                <div class="card-content">
+                    <h3>Roles</h3>
+                    <p>Configure roles del sistema</p>
+                    <a href="/roles" class="card-link">Acceder</a>
+                </div>
             </div>
-        </div>
+        </AuthorizeView>
         
-        <div class="grid-item">
-            <div class="card">
-                <p class="subtitle">Secciones Definidas</p>
-                <h4 class="stat-value">@_sectionCount</h4>
-                <hr class="divider" />
-                <a href="/sectiondefinitions" class="link">Ver detalle</a>
+        <AuthorizeView Roles="SystemAdmin,TenantAdmin">
+            <div class="access-card sections-card">
+                <div class="card-icon">📋</div>
+                <div class="card-content">
+                    <h3>Secciones</h3>
+                    <p>Defina secciones personalizadas</p>
+                    <a href="/sectiondefinitions" class="card-link">Acceder</a>
+                </div>
             </div>
-        </div>
+        </AuthorizeView>
         
-        <div class="grid-item">
-            <div class="card">
-                <p class="subtitle">Estado</p>
-                <h4 class="stat-value success-text">Activo</h4>
-                <hr class="divider" />
-                <span class="chip success">OK</span>
+        <AuthorizeView Roles="SystemAdmin">
+            <div class="access-card tenants-card">
+                <div class="card-icon">🏢</div>
+                <div class="card-content">
+                    <h3>Inquilinos</h3>
+                    <p>Administre inquilinos del sistema</p>
+                    <a href="/systemadmin/tenants" class="card-link">Acceder</a>
+                </div>
             </div>
-        </div>
+        </AuthorizeView>
     </div>
     
-    <div class="grid mt-4">
-        <div class="grid-item-large">
-            <div class="card">
-                <h6 class="card-title">Actividad Reciente</h6>
-                <hr class="divider mb-4" />
-                
-                @if (_recentActivities.Any())
-                {
-                    <div class="list">
-                        @foreach (var activity in _recentActivities)
-                        {
-                            <div class="list-item">
-                                <div class="flex-row">
-                                    <div class="avatar @activity.ColorClass">@activity.Icon</div>
-                                    <div>
-                                        <p class="body-text">@activity.Description</p>
-                                        <p class="caption-text">@activity.Timestamp.ToString("g")</p>
-                                    </div>
-                                </div>
-                            </div>
-                        }
-                    </div>
-                }
-                else
-                {
-                    <p class="secondary-text">No hay actividades recientes para mostrar.</p>
-                }
+    <div class="system-status">
+        <div class="status-card">
+            <h3>Estado del Sistema</h3>
+            <div class="status-indicator active"></div>
+            <p>Sistema funcionando correctamente</p>
+            <div class="system-info">
+                <p><strong>Inquilino:</strong> @_tenantName</p>
+                <p><strong>Versión:</strong> v1.0.0</p>
+                <p><strong>Último acceso:</strong> @DateTime.Now.ToString("g")</p>
             </div>
         </div>
         
-        <div class="grid-item-small">
-            <div class="card">
-                <h6 class="card-title">Acciones Rápidas</h6>
-                <hr class="divider mb-4" />
-                
-                <button class="button primary full-width mb-2">
-                    <span class="button-icon">👤+</span>
-                    <span>Crear Usuario</span>
-                </button>
-                <button class="button secondary full-width mb-2">
-                    <span class="button-icon">➕</span>
-                    <span>Nueva Sección</span>
-                </button>
-                <button class="button info full-width mb-2">
-                    <span class="button-icon">🔒</span>
-                    <span>Configurar Roles</span>
-                </button>
-                <button class="button default full-width">
-                    <span class="button-icon">⚙️</span>
-                    <span>Configuración</span>
-                </button>
-            </div>
-            
-            <div class="card mt-4">
-                <h6 class="card-title">Información del Sistema</h6>
-                <hr class="divider mb-4" />
-                
-                <p class="body-text"><b>Inquilino:</b> @_tenantName</p>
-                <p class="body-text"><b>Versión:</b> v1.0.0</p>
-                <p class="body-text"><b>Último acceso:</b> @DateTime.Now.ToString("g")</p>
-            </div>
+        <div class="recent-activity-card">
+            <h3>Actividad Reciente</h3>
+            @if (_recentActivities.Any())
+            {
+                <div class="activity-list">
+                    @foreach (var activity in _recentActivities.Take(3))
+                    {
+                        <div class="activity-item">
+                            <div class="activity-icon @activity.ColorClass">@activity.Icon</div>
+                            <div class="activity-details">
+                                <p class="activity-description">@activity.Description</p>
+                                <p class="activity-time">@activity.Timestamp.ToString("g")</p>
+                            </div>
+                        </div>
+                    }
+                </div>
+                @if (_recentActivities.Count > 3)
+                {
+                    <a href="#" class="view-all-link">Ver todas las actividades</a>
+                }
+            }
+            else
+            {
+                <p class="no-activities">No hay actividades recientes para mostrar.</p>
+            }
         </div>
     </div>
 </div>
 
 @code {
-    // Datos de ejemplo para la demostración
-    private int _userCount = 24;
-    private int _roleCount = 6;
-    private int _sectionCount = 8;
     private string _tenantName = "Acme Corporation";
     
     private List<RecentActivity> _recentActivities = new List<RecentActivity>

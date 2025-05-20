@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.13.35931.197 d17.13
+VisualStudioVersion = 17.13.35931.197
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppMultiTenant.Domain", "AppMultiTenant.Domain\AppMultiTenant.Domain.csproj", "{1AD66466-64B0-41FD-8067-BF671D1FA775}"
 EndProject
@@ -12,6 +12,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppMultiTenant.Server", "AppMultiTenant.Server\AppMultiTenant.Server.csproj", "{7447E7F5-5A11-4D2F-BE03-AF4043453EA7}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppMultiTenant.Client", "AppMultiTenant.Client\AppMultiTenant.Client.csproj", "{E9A018D3-B5A0-4703-BDE8-8EF03469254A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppMultiTenant.ClientWASM", "AppMultiTenant.ClientWASM\AppMultiTenant.ClientWASM.csproj", "{2819C0E7-D2F0-4230-ADD6-0337E5530614}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +41,10 @@ Global
 		{E9A018D3-B5A0-4703-BDE8-8EF03469254A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E9A018D3-B5A0-4703-BDE8-8EF03469254A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E9A018D3-B5A0-4703-BDE8-8EF03469254A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2819C0E7-D2F0-4230-ADD6-0337E5530614}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2819C0E7-D2F0-4230-ADD6-0337E5530614}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2819C0E7-D2F0-4230-ADD6-0337E5530614}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2819C0E7-D2F0-4230-ADD6-0337E5530614}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
