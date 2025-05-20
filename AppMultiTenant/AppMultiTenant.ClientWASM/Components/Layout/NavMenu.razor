@@ -20,60 +20,67 @@
             </NavLink>
         </div>
 
-        <!-- Auth Section -->
-        <div class="nav-item px-3">
-            <span class="nav-section-title">Authentication</span>
-            <NavLink class="nav-link" href="login">
-                <span class="bi bi-box-arrow-in-right-nav-menu" aria-hidden="true"></span> Login
-            </NavLink>
-            <NavLink class="nav-link" href="register">
-                <span class="bi bi-person-plus-fill-nav-menu" aria-hidden="true"></span> Register
-            </NavLink>
-        </div>
+        <AuthorizeView>
+            <Authorized>
+                <!-- Section visible only for authenticated users -->
+                
+                <!-- Tenants Section -->
+                <div class="nav-item px-3">
+                    <span class="nav-section-title">Tenants</span>
+                    <NavLink class="nav-link" href="superadmin/tenants">
+                        <span class="bi bi-building-fill-nav-menu" aria-hidden="true"></span> Tenant List
+                    </NavLink>
+                    <NavLink class="nav-link" href="superadmin/tenants/create">
+                        <span class="bi bi-building-add-nav-menu" aria-hidden="true"></span> Create Tenant
+                    </NavLink>
+                </div>
 
-        <!-- Tenants Section -->
-        <div class="nav-item px-3">
-            <span class="nav-section-title">Tenants</span>
-            <NavLink class="nav-link" href="superadmin/tenants">
-                <span class="bi bi-building-fill-nav-menu" aria-hidden="true"></span> Tenant List
-            </NavLink>
-            <NavLink class="nav-link" href="superadmin/tenants/create">
-                <span class="bi bi-building-add-nav-menu" aria-hidden="true"></span> Create Tenant
-            </NavLink>
-        </div>
+                <!-- Users Section -->
+                <div class="nav-item px-3">
+                    <span class="nav-section-title">Users</span>
+                    <NavLink class="nav-link" href="users">
+                        <span class="bi bi-people-fill-nav-menu" aria-hidden="true"></span> User List
+                    </NavLink>
+                    <NavLink class="nav-link" href="users/create">
+                        <span class="bi bi-person-add-nav-menu" aria-hidden="true"></span> Create User
+                    </NavLink>
+                </div>
 
-        <!-- Users Section -->
-        <div class="nav-item px-3">
-            <span class="nav-section-title">Users</span>
-            <NavLink class="nav-link" href="users">
-                <span class="bi bi-people-fill-nav-menu" aria-hidden="true"></span> User List
-            </NavLink>
-            <NavLink class="nav-link" href="users/create">
-                <span class="bi bi-person-add-nav-menu" aria-hidden="true"></span> Create User
-            </NavLink>
-        </div>
+                <!-- Roles Section -->
+                <div class="nav-item px-3">
+                    <span class="nav-section-title">Roles</span>
+                    <NavLink class="nav-link" href="roles">
+                        <span class="bi bi-person-badge-fill-nav-menu" aria-hidden="true"></span> Role List
+                    </NavLink>
+                    <NavLink class="nav-link" href="roles/create">
+                        <span class="bi bi-person-badge-nav-menu" aria-hidden="true"></span> Create Role
+                    </NavLink>
+                </div>
 
-        <!-- Roles Section -->
-        <div class="nav-item px-3">
-            <span class="nav-section-title">Roles</span>
-            <NavLink class="nav-link" href="roles">
-                <span class="bi bi-person-badge-fill-nav-menu" aria-hidden="true"></span> Role List
-            </NavLink>
-            <NavLink class="nav-link" href="roles/create">
-                <span class="bi bi-person-badge-nav-menu" aria-hidden="true"></span> Create Role
-            </NavLink>
-        </div>
-
-        <!-- Section Definitions -->
-        <div class="nav-item px-3">
-            <span class="nav-section-title">Section Definitions</span>
-            <NavLink class="nav-link" href="section-definitions">
-                <span class="bi bi-layout-sidebar-nav-menu" aria-hidden="true"></span> Section List
-            </NavLink>
-            <NavLink class="nav-link" href="section-definitions/create">
-                <span class="bi bi-layout-sidebar-inset-nav-menu" aria-hidden="true"></span> Create Section
-            </NavLink>
-        </div>
+                <!-- Section Definitions -->
+                <div class="nav-item px-3">
+                    <span class="nav-section-title">Section Definitions</span>
+                    <NavLink class="nav-link" href="section-definitions">
+                        <span class="bi bi-layout-sidebar-nav-menu" aria-hidden="true"></span> Section List
+                    </NavLink>
+                    <NavLink class="nav-link" href="section-definitions/create">
+                        <span class="bi bi-layout-sidebar-inset-nav-menu" aria-hidden="true"></span> Create Section
+                    </NavLink>
+                </div>
+            </Authorized>
+            <NotAuthorized>
+                <!-- Auth Section - Only visible for non-authenticated users -->
+                <div class="nav-item px-3">
+                    <span class="nav-section-title">Authentication</span>
+                    <NavLink class="nav-link" href="login">
+                        <span class="bi bi-box-arrow-in-right-nav-menu" aria-hidden="true"></span> Login
+                    </NavLink>
+                    <NavLink class="nav-link" href="register">
+                        <span class="bi bi-person-plus-fill-nav-menu" aria-hidden="true"></span> Register
+                    </NavLink>
+                </div>
+            </NotAuthorized>
+        </AuthorizeView>
     </nav>
 </div>
 

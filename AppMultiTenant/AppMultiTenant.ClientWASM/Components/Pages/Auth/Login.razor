@@ -1,7 +1,9 @@
 @page "/login"
+@page "/login/{ReturnUrl}"
 @inject NavigationManager NavigationManager
 @inject CustomAuthenticationStateProvider AuthStateProvider
 @inject IAuthApiClient AuthApiClient
+@inject IJSRuntime JSRuntime
 
 <PageTitle>Login - AppMultiTenant</PageTitle>
 
@@ -54,9 +56,13 @@
 </div>
 
 @code {
+    [Parameter]
+    public string ReturnUrl { get; set; }
+
     private LoginViewModel loginViewModel = new();
     private bool isBusy = false;
     private string errorMessage = "";
+    private string returnUrlValue;
 
     protected override async Task OnInitializedAsync()
     {
@@ -65,6 +71,30 @@
         if (isAuthenticated)
         {
             NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        // Intentar obtener el returnUrl de los parámetros de consulta si no está en la ruta
+        var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
+        if (Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query).TryGetValue("returnUrl", out var returnUrlQueryValue))
+        {
+            returnUrlValue = returnUrlQueryValue;
+        }
+        else if (!string.IsNullOrEmpty(ReturnUrl))
+        {
+            returnUrlValue = ReturnUrl;
+        }
+        else
+        {
+            // Intentar obtener de localStorage como respaldo
+            try
+            {
+                returnUrlValue = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "returnUrl");
+            }
+            catch
+            {
+                returnUrlValue = "";
+            }
         }
     }
 
@@ -89,8 +119,19 @@
             // Guardar token y notificar cambio de estado de autenticación
             await AuthStateProvider.MarkUserAsAuthenticated(authResponse.Token, authResponse.User);
             
-            // Redireccionar a la página principal
-            NavigationManager.NavigateTo("/");
+            // Limpiar la URL de retorno del localStorage
+            await JSRuntime.InvokeVoidAsync("localStorage.removeItem", "returnUrl");
+            
+            // Redireccionar a la página original o a la principal
+            if (!string.IsNullOrEmpty(returnUrlValue))
+            {
+                string decodedUrl = Uri.UnescapeDataString(returnUrlValue);
+                NavigationManager.NavigateTo(decodedUrl);
+            }
+            else
+            {
+                NavigationManager.NavigateTo("/");
+            }
         }
         catch (HttpRequestException ex)
         {

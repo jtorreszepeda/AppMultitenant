@@ -1,4 +1,8 @@
 ﻿@inherits LayoutComponentBase
+@inject NavigationManager NavigationManager
+@inject CustomAuthenticationStateProvider AuthStateProvider
+@inject IAuthApiClient AuthApiClient
+@inject IJSRuntime JSRuntime
 
 <div class="page">
     <div class="sidebar">
@@ -7,7 +11,26 @@
 
     <main>
         <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
+            <AuthorizeView>
+                <Authorized>
+                    <div class="d-flex align-items-center">
+                        <span class="me-3">Bienvenido, @context.User.Identity?.Name</span>
+                        <button class="btn btn-outline-danger btn-sm" @onclick="Logout">
+                            <i class="fas fa-sign-out-alt me-1"></i> Cerrar sesión
+                        </button>
+                    </div>
+                </Authorized>
+                <NotAuthorized>
+                    <div>
+                        <a href="/login" class="btn btn-outline-primary btn-sm me-2">
+                            <i class="fas fa-sign-in-alt me-1"></i> Iniciar sesión
+                        </a>
+                        <a href="/register" class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-user-plus me-1"></i> Registrarse
+                        </a>
+                    </div>
+                </NotAuthorized>
+            </AuthorizeView>
         </div>
 
         <article class="content px-4">
@@ -15,3 +38,19 @@
         </article>
     </main>
 </div>
+
+@code {
+    private async Task Logout()
+    {
+        try
+        {
+            await AuthApiClient.LogoutAsync();
+            await AuthStateProvider.MarkUserAsLoggedOut();
+            NavigationManager.NavigateTo("/");
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("console.error", $"Error al cerrar sesión: {ex.Message}");
+        }
+    }
+}

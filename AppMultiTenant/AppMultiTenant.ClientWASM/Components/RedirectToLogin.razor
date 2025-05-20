@@ -1,0 +1,17 @@
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+
+@code {
+    protected override void OnInitialized()
+    {
+        // Obtener la URL actual para redireccionar de vuelta después del login
+        var currentUrl = NavigationManager.Uri;
+        var returnUrl = Uri.EscapeDataString(currentUrl);
+        
+        // Almacenar la URL de retorno en localStorage para recuperarla después del login
+        _ = JSRuntime.InvokeVoidAsync("localStorage.setItem", "returnUrl", returnUrl);
+        
+        // Redirigir a la página de login
+        NavigationManager.NavigateTo($"/login?returnUrl={returnUrl}", forceLoad: false);
+    }
+} 

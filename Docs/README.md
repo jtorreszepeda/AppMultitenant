@@ -426,12 +426,18 @@ Según la lista de tareas, el proyecto se encuentra en las siguientes fases:
   - CustomAuthenticationStateProvider para gestionar tokens JWT
   - Almacenamiento seguro de tokens en localStorage del navegador
   - Integración con el sistema de autorización de Blazor
-  - Configuración de rutas protegidas con AuthorizeRouteView
-  - Redirección automática al login para usuarios no autenticados
-  - Implementación de componentes RequireAuth y RequireRole para protección de páginas:
-    - RequireAuth: Redirige a la página de login si el usuario no está autenticado
-    - RequireRole: Verifica roles específicos y muestra mensaje de acceso denegado o redirige al login según corresponda
-    - Aplicación de estos componentes en todas las páginas de gestión (Usuarios, Roles, Secciones y Tenants)
+  - Configuración de rutas protegidas con `AuthorizeRouteView` en Routes.razor:
+    - Redirección automática al login para usuarios no autenticados mediante el componente `RedirectToLogin`
+    - Redirección a página de acceso denegado mediante el componente `RedirectToAccessDenied`
+    - Implementación de página `AccessDenied.razor` con opciones de navegación
+    - Preservación de la URL original para redirigir al usuario después del login exitoso
+    - Visualización de indicador de carga durante la autorización
+  - Protección de páginas críticas con el atributo [Authorize]:
+    - Aplicación del atributo a las páginas de gestión de usuarios, roles y secciones
+    - Sistema consistente de manejo de errores de autorización
+  - Actualización de navegación y layout principal:
+    - Visualización condicional de opciones de menú basadas en autenticación
+    - Botones de login/logout en MainLayout según estado de autenticación
 - Implementación de servicios ApiClient para comunicación con el backend:
   - AuthApiClient para operaciones de autenticación y gestión de tokens:
     - Implementación completa de métodos para login/logout
